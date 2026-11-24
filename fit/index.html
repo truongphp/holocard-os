@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>FitMirror AR • Ướm Đồ Shopee &amp; Đo Tông Da</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#07070c" />
+  <link rel="icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@700&display=swap');
+
+    :root {
+      --bg-base: #07070c;
+      --accent: #00f5ff;
+      --accent-2: #ff00e5;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg-base);
+      color: #f4f4f6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overscroll-behavior: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 0px);
+      min-height: calc(3.25rem + env(safe-area-inset-top, 0px));
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.14);
+      height: 4px;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #00f5ff;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+    }
+
+    .tab-active {
+      color: #00f5ff;
+      background: rgba(0, 245, 255, 0.12);
+      border-color: rgba(0, 245, 255, 0.38);
+    }
+
+    .chip-active {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.22), rgba(255, 0, 229, 0.18));
+      border-color: #00f5ff !important;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-[100dvh] w-full select-none">
+
+  <!-- TOP HEADER -->
+  <header class="safe-top shrink-0 px-3 pb-1.5 bg-[#0c0d15]/95 border-b border-white/10 flex items-center justify-between gap-2 z-20">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 via-sky-500 to-fuchsia-500 p-[1.5px] shrink-0">
+        <div class="w-full h-full rounded-[10px] bg-[#0b0c14] flex items-center justify-center">
+          <i data-lucide="shirt" class="w-4 h-4 text-cyan-300"></i>
+        </div>
+      </div>
+      <div class="min-w-0 leading-tight">
+        <div class="flex items-center gap-1.5">
+          <span class="font-extrabold text-[13.5px] tracking-tight text-white truncate" style="font-family: 'Space Grotesk', sans-serif;">FitMirror</span>
+          <span class="px-1.5 py-0.5 rounded bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-[9px] font-black text-zinc-950">AR</span>
+        </div>
+        <div class="text-[10px] text-zinc-400 truncate">Ướm Đồ Shopee &amp; Đo Tông Da • by Văn Trường</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button id="btnCamToggle" type="button" class="h-8 px-2.5 rounded-xl bg-white/8 hover:bg-white/15 border border-white/12 text-[11px] font-bold text-cyan-300 flex items-center gap-1 transition">
+        <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+        <span id="camLabel">Cam AR</span>
+      </button>
+
+      <label for="bodyPhotoInput" class="h-8 px-2.5 rounded-xl bg-white/8 hover:bg-white/15 border border-white/12 text-[11px] font-bold text-zinc-100 flex items-center gap-1 cursor-pointer transition">
+        <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span>Ảnh Bạn</span>
+      </label>
+      <input id="bodyPhotoInput" type="file" accept="image/*" class="hidden" />
+
+      <button id="btnExportLook" type="button" class="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-[11.5px] font-black text-zinc-950 flex items-center gap-1 shadow-md active:scale-95 transition">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span>Lưu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+
+    <!-- MIRROR STAGE -->
+    <section class="relative flex-1 min-h-0 flex flex-col items-center justify-center p-2.5 sm:p-4 bg-[radial-gradient(circle_at_50%_35%,rgba(0,245,255,0.09),transparent_62%),linear-gradient(180deg,#090a12_0%,#05050a_100%)] overflow-hidden">
+
+      <!-- Floating Top Pills -->
+      <div class="absolute top-2.5 left-3 right-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
+        <div class="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/12 text-[10.5px] font-semibold text-zinc-200">
+          <span id="statusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="statusText">Phòng Thử Đồ AR • Sẵn sàng</span>
+        </div>
+
+        <div class="pointer-events-auto flex items-center gap-1.5">
+          <button id="btnFlipCam" type="button" class="hidden h-7 px-2 rounded-full bg-black/75 border border-white/15 text-[10.5px] font-semibold text-zinc-200 flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Lật</span>
+          </button>
+          <button id="btnEnablePoseAI" type="button" class="h-7 px-2.5 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-[10.5px] font-bold text-cyan-300 flex items-center gap-1">
+            <i data-lucide="scan-face" class="w-3 h-3"></i>
+            <span>Bám Dáng AI</span>
+          </button>
+          <button id="btnResetActive" type="button" class="h-7 px-2 rounded-full bg-black/75 border border-white/15 text-[10.5px] font-semibold text-zinc-300">
+            Đặt lại
+          </button>
+        </div>
+      </div>
+
+      <!-- Portrait 3:4 Mirror Canvas -->
+      <div class="relative h-full max-h-[520px] aspect-[3/4] rounded-[26px] p-1 bg-gradient-to-br from-cyan-400/40 via-white/10 to-fuchsia-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
+        <div class="relative w-full h-full rounded-[22px] overflow-hidden bg-[#0e101a]">
+          <canvas id="mirrorCanvas" width="540" height="720" class="w-full h-full block touch-none cursor-grab active:cursor-grabbing"></canvas>
+          <video id="camVideo" playsinline autoplay muted class="hidden"></video>
+
+          <!-- Floating Skin-Tone Harmony Pill -->
+          <div id="harmonyPill" class="absolute bottom-2.5 left-2.5 right-2.5 rounded-2xl bg-black/75 backdrop-blur-md border border-white/15 px-3 py-2 flex items-center justify-between gap-2 pointer-events-none">
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="skinSwatch" class="w-6 h-6 rounded-full border-2 border-white/80 shrink-0" style="background:#f1c7a6;"></span>
+              <div class="min-w-0 leading-tight">
+                <div id="skinToneTitle" class="text-[11px] font-extrabold text-white truncate">Tông da: Trung tính ấm</div>
+                <div id="harmonyVerdict" class="text-[10px] text-emerald-300 truncate">Hợp màu 92% • Tôn da rõ rệt</div>
+              </div>
+            </div>
+            <span id="harmonyScoreBadge" class="shrink-0 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/45 text-[11px] font-black text-emerald-300">92%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTROL PANEL -->
+    <aside class="shrink-0 lg:w-[390px] bg-[#0e0f18] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col max-h-[46dvh] lg:max-h-none">
+
+      <!-- Slot & Feature Tabs -->
+      <div class="shrink-0 grid grid-cols-4 gap-1 p-2 border-b border-white/10">
+        <button type="button" data-slot="outfit" class="slot-tab tab-active py-1.5 rounded-xl border border-transparent text-[11px] font-bold flex flex-col items-center gap-0.5 transition">
+          <i data-lucide="shirt" class="w-4 h-4"></i>
+          <span>Áo / Đồ</span>
+        </button>
+        <button type="button" data-slot="glasses" class="slot-tab py-1.5 rounded-xl border border-transparent text-[11px] font-bold text-zinc-400 flex flex-col items-center gap-0.5 transition">
+          <i data-lucide="glasses" class="w-4 h-4"></i>
+          <span>Kính Mắt</span>
+        </button>
+        <button type="button" data-slot="head" class="slot-tab py-1.5 rounded-xl border border-transparent text-[11px] font-bold text-zinc-400 flex flex-col items-center gap-0.5 transition">
+          <i data-lucide="crown" class="w-4 h-4"></i>
+          <span>Mũ / Tóc</span>
+        </button>
+        <button type="button" data-slot="tone" class="slot-tab py-1.5 rounded-xl border border-transparent text-[11px] font-bold text-zinc-400 flex flex-col items-center gap-0.5 transition">
+          <i data-lucide="palette" class="w-4 h-4"></i>
+          <span>Tông Da</span>
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="flex-1 overflow-y-auto no-scrollbar p-3 safe-bottom">
+
+        <!-- GARMENT CONTROL PANEL (Shared for outfit / glasses / head) -->
+        <div id="garmentControls" class="flex flex-col gap-3">
+
+          <!-- Upload Shopee / TikTok Shop Product Screenshot -->
+          <div class="flex items-center gap-2">
+            <label for="itemUploadInput" class="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500/18 to-fuchsia-500/18 border border-cyan-400/40 text-xs font-extrabold text-white flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] transition">
+              <i data-lucide="upload" class="w-4 h-4 text-cyan-300"></i>
+              <span id="uploadSlotLabel">Tải ảnh Áo từ Shopee / TikTok Shop</span>
+            </label>
+            <input id="itemUploadInput" type="file" accept="image/*" class="hidden" />
+
+            <button id="btnClearSlot" type="button" title="Tháo món đồ này" class="h-10 px-3 rounded-xl bg-white/8 hover:bg-rose-500/20 border border-white/12 text-xs font-bold text-rose-300">
+              Tháo
+            </button>
+          </div>
+
+          <!-- Quick Starter Items for Current Slot -->
+          <div>
+            <div class="text-[10.5px] font-bold text-zinc-400 mb-1.5">Mẫu thử nhanh (bấm để ướm ngay):</div>
+            <div id="starterGrid" class="grid grid-cols-4 gap-1.5"></div>
+          </div>
+
+          <!-- Precision Sliders -->
+          <div class="grid grid-cols-2 gap-2.5 bg-white/5 border border-white/10 rounded-2xl p-2.5">
+            <div>
+              <div class="flex justify-between text-[10.5px] text-zinc-400 mb-1">
+                <span>Kích thước</span>
+                <span id="valScale" class="text-cyan-300 font-bold">100%</span>
+              </div>
+              <input id="rngScale" type="range" min="40" max="180" value="100" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[10.5px] text-zinc-400 mb-1">
+                <span>Góc xoay</span>
+                <span id="valRotate" class="text-cyan-300 font-bold">0°</span>
+              </div>
+              <input id="rngRotate" type="range" min="-35" max="35" value="0" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[10.5px] text-zinc-400 mb-1">
+                <span>Tách nền ảnh shop</span>
+                <span id="valCutout" class="text-fuchsia-300 font-bold">38</span>
+              </div>
+              <input id="rngCutout" type="range" min="0" max="95" value="38" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[10.5px] text-zinc-400 mb-1">
+                <span>Độ hòa trộn</span>
+                <span id="valOpacity" class="text-emerald-300 font-bold">96%</span>
+              </div>
+              <input id="rngOpacity" type="range" min="45" max="100" value="96" class="w-full" />
+            </div>
+          </div>
+
+          <p class="text-[10.5px] text-zinc-400 leading-snug">
+            Mẹo: Kéo ngón tay trực tiếp trên khung ảnh để dịch chuyển món đồ đang chọn. Tăng thanh <span class="text-fuchsia-300 font-semibold">Tách nền ảnh shop</span> để lọc sạch nền trắng từ ảnh chụp màn hình Shopee.
+          </p>
+        </div>
+
+        <!-- SKIN TONE & COLOR HARMONY TAB -->
+        <div id="toneControls" class="hidden flex-col gap-3">
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-extrabold text-white">Phân Tích Tông Da &amp; Độ Hợp Màu</span>
+              <button id="btnRescanSkin" type="button" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-400/35 text-[10.5px] font-bold text-cyan-300">
+                Quét lại da
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-2.5">
+              <div class="rounded-xl bg-black/45 p-2.5 border border-white/8">
+                <div class="text-[10px] text-zinc-400">Phân loại tông da</div>
+                <div id="toneClassDetail" class="text-xs font-extrabold text-amber-200 mt-0.5">Trung tính ấm</div>
+              </div>
+              <div class="rounded-xl bg-black/45 p-2.5 border border-white/8">
+                <div class="text-[10px] text-zinc-400">Màu món đồ đang ướm</div>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span id="itemColorDot" class="w-3.5 h-3.5 rounded-full border border-white/40 inline-block" style="background:#0ea5e9;"></span>
+                  <span id="itemColorHex" class="text-xs font-bold text-white">#0EA5E9</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="toneAdviceText" class="text-[11.5px] text-zinc-300 leading-relaxed mb-2.5">
+              Màu món đồ hiện tại tạo độ tương phản dễ chịu với sắc da, giúp khuôn mặt sáng hơn khi chụp ảnh ngoài trời lẫn trong phòng.
+            </div>
+
+            <div class="text-[10.5px] font-bold text-zinc-400 mb-1.5">Bảng màu cực tôn tông da của bạn:</div>
+            <div id="recommendedSwatches" class="flex items-center gap-2"></div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-full bg-zinc-900/95 border border-cyan-400/40 text-xs font-semibold text-cyan-200 shadow-lg whitespace-nowrap"></div>
+
+  <script>
+    lucide.createIcons();
+
+    // ==================== STATE ====================
+    const state = {
+      sourceMode: "demo", // "demo" | "photo" | "camera"
+      facingMode: "user",
+      activeSlot: "outfit", // "outfit" | "glasses" | "head" | "tone"
+      slots: {
+        outfit: { enabled: true, preset: "hoodie_cyan", customImg: null, cutCanvas: null, x: 0.5, y: 0.645, scale: 1.0, rot: 0, cutout: 38, opacity: 0.96, color: "#0ea5e9" },
+        glasses: { enabled: false, preset: "y2k_shades", customImg: null, cutCanvas: null, x: 0.5, y: 0.255, scale: 1.0, rot: 0, cutout: 38, opacity: 0.96, color: "#111827" },
+        head: { enabled: false, preset: "cap_black", customImg: null, cutCanvas: null, x: 0.5, y: 0.145, scale: 1.0, rot: 0, cutout: 38, opacity: 0.96, color: "#181825" },
+      },
+      anchors: {
+        shoulders: { x: 0.5, y: 0.645, w: 0.52, angle: 0, detected: false },
+        eyes: { x: 0.5, y: 0.255, w: 0.24, angle: 0, detected: false },
+        head: { x: 0.5, y: 0.145, w: 0.28, angle: 0, detected: false },
+      },
+      skinRGB: { r: 241, g: 199, b: 166 },
+      poseAIReady: false,
+      aiLoading: false,
+    };
+
+    const STARTERS = {
+      outfit: [
+        { id: "hoodie_cyan", name: "Hoodie Neon", emoji: "🧥", color: "#0ea5e9" },
+        { id: "varsity_dark", name: "Varsity Đen", emoji: "🖤", color: "#181825" },
+        { id: "sweater_cream", name: "Sweater Kem", emoji: "🤍", color: "#f5efe6" },
+        { id: "tee_rose", name: "Áo Hồng Y2K", emoji: "🩷", color: "#ec4899" },
+      ],
+      glasses: [
+        { id: "y2k_shades", name: "Kính Y2K", emoji: "🕶️", color: "#09090d" },
+        { id: "round_gold", name: "Gọng Tròn", emoji: "🤓", color: "#eab308" },
+        { id: "cyber_visor", name: "Kính Cyber", emoji: "🥽", color: "#00f5ff" },
+        { id: "pink_tint", name: "Kính Hồng", emoji: "🩷", color: "#f472b6" },
+      ],
+      head: [
+        { id: "cap_black", name: "Lưỡi Trai", emoji: "🧢", color: "#181825" },
+        { id: "beanie_gray", name: "Mũ Len", emoji: "🧶", color: "#64748b" },
+        { id: "beret_red", name: "Mũ Nồi Đỏ", emoji: "🎨", color: "#be123c" },
+        { id: "bucket_cream", name: "Bucket Kem", emoji: "👒", color: "#e7e5e4" },
+      ],
+    };
+
+    const mirrorCanvas = document.getElementById("mirrorCanvas");
+    const mCtx = mirrorCanvas.getContext("2d", { willReadFrequently: true });
+    const camVideo = document.getElementById("camVideo");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const toastEl = document.getElementById("toast");
+
+    const srcCanvas = document.createElement("canvas");
+    srcCanvas.width = 540; srcCanvas.height = 720;
+    const srcCtx = srcCanvas.getContext("2d", { willReadFrequently: true });
+
+    let bodyImg = null;
+    let camStream = null;
+    let poseLandmarker = null;
+    let toastTimer = null;
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.add("hidden"), 2500);
+    }
+
+    function setStatus(txt, dotClass) {
+      statusText.textContent = txt;
+      statusDot.className = "w-2 h-2 rounded-full " + dotClass;
+    }
+
+    // ==================== SMART AUTO-CUTOUT FOR SHOPEE / TIKTOK SHOP SCREENSHOTS ====================
+    function processProductCutout(img, threshold) {
+      const maxDim = 480;
+      const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      const w = Math.max(1, Math.round(img.width * ratio));
+      const h = Math.max(1, Math.round(img.height * ratio));
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      if (threshold > 0) {
+        const corners = [
+          0,
+          (w - 1) * 4,
+          (h - 1) * w * 4,
+          ((h - 1) * w + (w - 1)) * 4,
+        ];
+        let br = 0, bg = 0, bb = 0;
+        corners.forEach((p) => { br += d[p]; bg += d[p + 1]; bb += d[p + 2]; });
+        br /= 4; bg /= 4; bb /= 4;
+
+        const visited = new Uint8Array(w * h);
+        const queue = new Int32Array(w * h);
+        let head = 0, tail = 0;
+        const tol = threshold * 2.4;
+
+        const isBgPixel = (idx) => {
+          const p = idx * 4;
+          if (d[p + 3] < 20) return true;
+          const dist = Math.hypot(d[p] - br, d[p + 1] - bg, d[p + 2] - bb);
+          return dist <= tol;
+        };
+
+        for (let x = 0; x < w; x++) {
+          const top = x;
+          const bot = (h - 1) * w + x;
+          if (isBgPixel(top) && !visited[top]) { visited[top] = 1; queue[tail++] = top; }
+          if (isBgPixel(bot) && !visited[bot]) { visited[bot] = 1; queue[tail++] = bot; }
+        }
+        for (let y = 1; y < h - 1; y++) {
+          const left = y * w;
+          const right = y * w + (w - 1);
+          if (isBgPixel(left) && !visited[left]) { visited[left] = 1; queue[tail++] = left; }
+          if (isBgPixel(right) && !visited[right]) { visited[right] = 1; queue[tail++] = right; }
+        }
+
+        while (head < tail) {
+          const cur = queue[head++];
+          d[cur * 4 + 3] = 0;
+          const cx = cur % w;
+          const cy = (cur - cx) / w;
+          if (cx > 0) { const n = cur - 1; if (!visited[n] && isBgPixel(n)) { visited[n] = 1; queue[tail++] = n; } }
+          if (cx < w - 1) { const n = cur + 1; if (!visited[n] && isBgPixel(n)) { visited[n] = 1; queue[tail++] = n; } }
+          if (cy > 0) { const n = cur - w; if (!visited[n] && isBgPixel(n)) { visited[n] = 1; queue[tail++] = n; } }
+          if (cy < h - 1) { const n = cur + w; if (!visited[n] && isBgPixel(n)) { visited[n] = 1; queue[tail++] = n; } }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      let sr = 0, sg = 0, sb = 0, cnt = 0;
+      for (let i = 0; i < d.length; i += 16) {
+        if (d[i + 3] > 180) {
+          sr += d[i]; sg += d[i + 1]; sb += d[i + 2]; cnt++;
+        }
+      }
+      const hex = cnt > 0
+        ? "#" + [sr / cnt, sg / cnt, sb / cnt].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")
+        : "#0ea5e9";
+
+      return { canvas: c, color: hex };
+    }
+
+    // ==================== SKIN TONE & COLOR HARMONY MATH ====================
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0, l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (max === g) h = ((b - r) / d + 2) / 6;
+        else h = ((r - g) / d + 4) / 6;
+      }
+      return { h: h * 360, s, l };
+    }
+
+    function hexToRgb(hex) {
+      const h = (hex || "#0ea5e9").replace("#", "");
+      return {
+        r: parseInt(h.slice(0, 2), 16) || 14,
+        g: parseInt(h.slice(2, 4), 16) || 165,
+        b: parseInt(h.slice(4, 6), 16) || 233,
+      };
+    }
+
+    function sampleSkinFromSource() {
+      drawBodySource(srcCtx, 540, 720);
+      const ex = Math.round(state.anchors.eyes.x * 540);
+      const ey = Math.round((state.anchors.eyes.y + 0.04) * 720);
+      const box = srcCtx.getImageData(Math.max(0, ex - 22), Math.max(0, ey - 12), 44, 24).data;
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let i = 0; i < box.length; i += 4) {
+        if (box[i + 3] > 200) { r += box[i]; g += box[i + 1]; b += box[i + 2]; n++; }
+      }
+      if (n > 0) state.skinRGB = { r: Math.round(r / n), g: Math.round(g / n), b: Math.round(b / n) };
+      updateHarmonyUI();
+    }
+
+    function updateHarmonyUI() {
+      const { r, g, b } = state.skinRGB;
+      const warmth = (r - b) + (g - b) * 0.35;
+      const skinHsl = rgbToHsl(r, g, b);
+      let toneType = "Trung tính (Neutral)";
+      let palettes = ["#0ea5e9", "#f5efe6", "#181825", "#10b981", "#ec4899"];
+      if (warmth > 58) {
+        toneType = skinHsl.l > 0.65 ? "Sáng Ấm (Warm Light)" : "Ngăm Ấm (Warm Deep)";
+        palettes = ["#f5efe6", "#d97706", "#059669", "#1e293b", "#be123c"];
+      } else if (warmth < 32) {
+        toneType = "Tông Lạnh (Cool Undertone)";
+        palettes = ["#38bdf8", "#a855f7", "#ec4899", "#f8fafc", "#0f172a"];
+      }
+
+      const activeKey = state.activeSlot === "tone" ? "outfit" : state.activeSlot;
+      const slot = state.slots[activeKey] || state.slots.outfit;
+      const itemRgb = hexToRgb(slot.color);
+      const itemHsl = rgbToHsl(itemRgb.r, itemRgb.g, itemRgb.b);
+
+      const lDiff = Math.abs(skinHsl.l - itemHsl.l);
+      let score = 76;
+      if (lDiff > 0.22 && lDiff < 0.68) score += 14;
+      else if (lDiff < 0.12) score -= 12;
+      if (itemHsl.s < 0.18) score += 8;
+      else if (warmth > 58 && (itemHsl.h < 65 || itemHsl.h > 330 || (itemHsl.h > 120 && itemHsl.h < 185))) score += 8;
+      else if (warmth <= 58 && (itemHsl.h >= 180 && itemHsl.h <= 325)) score += 8;
+      score = Math.max(58, Math.min(98, Math.round(score)));
+
+      let verdict = "Hài hòa, dễ mặc hàng ngày";
+      let advice = "Độ tương phản giữa màu đồ và sắc da ở mức cân bằng, lên ảnh tự nhiên và dễ phối phụ kiện.";
+      if (score >= 88) {
+        verdict = "Tôn da rõ rệt • Rất nên chốt đơn";
+        advice = "Màu này nâng tông da rất tốt và tách khối rõ với khuôn mặt. Bạn có thể chốt đơn tự tin!";
+      } else if (score < 72) {
+        verdict = "Hơi gần sắc da • Nên chọn màu đậm/sáng hơn";
+        advice = "Sắc độ món đồ đang khá tiệp với màu da nên dễ làm tổng thể hơi chìm. Thử phối thêm kính hoặc áo khoác tối màu để tạo điểm nhấn.";
+      }
+
+      const skinCss = `rgb(${r},${g},${b})`;
+      document.getElementById("skinSwatch").style.background = skinCss;
+      document.getElementById("skinToneTitle").textContent = "Tông da: " + toneType;
+      document.getElementById("harmonyVerdict").textContent = verdict;
+      document.getElementById("harmonyScoreBadge").textContent = score + "%";
+      document.getElementById("toneClassDetail").textContent = toneType;
+      document.getElementById("itemColorDot").style.background = slot.color;
+      document.getElementById("itemColorHex").textContent = slot.color.toUpperCase();
+      document.getElementById("toneAdviceText").textContent = advice;
+
+      const swWrap = document.getElementById("recommendedSwatches");
+      swWrap.innerHTML = "";
+      palettes.forEach((hex) => {
+        const dot = document.createElement("span");
+        dot.className = "w-7 h-7 rounded-full border-2 border-white/25 inline-block shadow";
+        dot.style.background = hex;
+        dot.title = hex;
+        swWrap.appendChild(dot);
+      });
+    }
+
+    // ==================== BUILT-IN DEMO MODEL & VECTOR GARMENTS ====================
+    function drawDemoModel(ctx, W, H) {
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, "#141626");
+      bg.addColorStop(1, "#0a0b12");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const spot = ctx.createRadialGradient(W * 0.5, H * 0.35, 20, W * 0.5, H * 0.35, W * 0.65);
+      spot.addColorStop(0, "rgba(56, 189, 248, 0.14)");
+      spot.addColorStop(1, "transparent");
+      ctx.fillStyle = spot;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.save();
+      ctx.fillStyle = "#e2e8f0";
+      ctx.beginPath();
+      ctx.moveTo(W * 0.23, H * 0.98);
+      ctx.lineTo(W * 0.26, H * 0.46);
+      ctx.quadraticCurveTo(W * 0.5, H * 0.38, W * 0.74, H * 0.46);
+      ctx.lineTo(W * 0.77, H * 0.98);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#f1c7a6";
+      ctx.fillRect(W * 0.18, H * 0.58, W * 0.08, H * 0.38);
+      ctx.fillRect(W * 0.74, H * 0.58, W * 0.08, H * 0.38);
+
+      ctx.fillStyle = "#e8b896";
+      ctx.fillRect(W * 0.435, H * 0.35, W * 0.13, H * 0.09);
+
+      ctx.fillStyle = "#181825";
+      ctx.beginPath();
+      ctx.arc(W * 0.5, H * 0.235, W * 0.165, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f1c7a6";
+      ctx.beginPath();
+      ctx.ellipse(W * 0.5, H * 0.26, W * 0.132, H * 0.115, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#181825";
+      ctx.beginPath();
+      ctx.arc(W * 0.5, H * 0.215, W * 0.142, Math.PI * 1.05, Math.PI * 1.95);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#111827";
+      ctx.beginPath(); ctx.arc(W * 0.445, H * 0.258, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(W * 0.555, H * 0.258, 6.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#b45309";
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(W * 0.5, H * 0.295, 16, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBodySource(ctx, W, H) {
+      ctx.clearRect(0, 0, W, H);
+      if (state.sourceMode === "camera" && camVideo.readyState >= 2) {
+        const vw = camVideo.videoWidth || W;
+        const vh = camVideo.videoHeight || H;
+        const targetRatio = W / H;
+        let sx = 0, sy = 0, sw = vw, sh = vh;
+        if (vw / vh > targetRatio) {
+          sw = vh * targetRatio;
+          sx = (vw - sw) / 2;
+        } else {
+          sh = vw / targetRatio;
+          sy = (vh - sh) / 2;
+        }
+        ctx.save();
+        if (state.facingMode === "user") { ctx.translate(W, 0); ctx.scale(-1, 1); }
+        ctx.drawImage(camVideo, sx, sy, sw, sh, 0, 0, W, H);
+        ctx.restore();
+      } else if (state.sourceMode === "photo" && bodyImg) {
+        const iw = bodyImg.naturalWidth || bodyImg.width;
+        const ih = bodyImg.naturalHeight || bodyImg.height;
+        const targetRatio = W / H;
+        let sx = 0, sy = 0, sw = iw, sh = ih;
+        if (iw / ih > targetRatio) {
+          sw = ih * targetRatio;
+          sx = (iw - sw) / 2;
+        } else {
+          sh = iw / targetRatio;
+          sy = (ih - sh) / 2;
+        }
+        ctx.drawImage(bodyImg, sx, sy, sw, sh, 0, 0, W, H);
+      } else {
+        drawDemoModel(ctx, W, H);
+      }
+    }
+
+    function drawStarterVector(ctx, slotName, presetId, W) {
+      ctx.save();
+      if (slotName === "outfit") {
+        const colors = {
+          hoodie_cyan: ["#0ea5e9", "#0369a1", "#38bdf8"],
+          varsity_dark: ["#181825", "#09090d", "#f4f4f6"],
+          sweater_cream: ["#f5efe6", "#d6ccc2", "#ffffff"],
+          tee_rose: ["#ec4899", "#be185d", "#fbcfe8"],
+        }[presetId] || ["#0ea5e9", "#0369a1", "#38bdf8"];
+
+        const g = ctx.createLinearGradient(-150, -160, 150, 190);
+        g.addColorStop(0, colors[0]);
+        g.addColorStop(1, colors[1]);
+        ctx.fillStyle = g;
+        ctx.strokeStyle = "rgba(255,255,255,0.22)";
+        ctx.lineWidth = 3;
+
+        ctx.beginPath();
+        ctx.moveTo(-68, -165);
+        ctx.quadraticCurveTo(0, -135, 68, -165);
+        ctx.lineTo(158, -125);
+        ctx.lineTo(185, 35);
+        ctx.lineTo(132, 42);
+        ctx.lineTo(124, -40);
+        ctx.lineTo(128, 175);
+        ctx.lineTo(-128, 175);
+        ctx.lineTo(-124, -40);
+        ctx.lineTo(-132, 42);
+        ctx.lineTo(-185, 35);
+        ctx.lineTo(-158, -125);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = colors[2];
+        ctx.font = "900 22px 'Space Grotesk', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(presetId === "varsity_dark" ? "V•T 09" : "FITLAB", 0, -30);
+        ctx.fillStyle = "rgba(255,255,255,0.16)";
+        ctx.beginPath();
+        ctx.roundRect(-62, 65, 124, 66, 16);
+        ctx.fill();
+      } else if (slotName === "glasses") {
+        if (presetId === "round_gold") {
+          ctx.strokeStyle = "#facc15";
+          ctx.lineWidth = 5;
+          ctx.fillStyle = "rgba(255,255,255,0.12)";
+          ctx.beginPath(); ctx.arc(-40, 0, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(40, 0, 30, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(10, 0); ctx.stroke();
+        } else if (presetId === "cyber_visor") {
+          const g = ctx.createLinearGradient(-85, 0, 85, 0);
+          g.addColorStop(0, "rgba(0,245,255,0.85)");
+          g.addColorStop(1, "rgba(255,0,229,0.85)");
+          ctx.fillStyle = g;
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(-84, -22, 168, 44, 14);
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = presetId === "pink_tint" ? "rgba(244,114,182,0.78)" : "#09090d";
+          ctx.strokeStyle = presetId === "pink_tint" ? "#fbcfe8" : "#38bdf8";
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.roundRect(-82, -20, 72, 40, 10);
+          ctx.roundRect(10, -20, 72, 40, 10);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillRect(-12, -10, 24, 8);
+        }
+      } else if (slotName === "head") {
+        const col = {
+          cap_black: "#181825",
+          beanie_gray: "#64748b",
+          beret_red: "#be123c",
+          bucket_cream: "#e7e5e4",
+        }[presetId] || "#181825";
+        ctx.fillStyle = col;
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 3;
+        if (presetId === "bucket_cream") {
+          ctx.beginPath();
+          ctx.moveTo(-70, 10);
+          ctx.lineTo(-55, -52);
+          ctx.lineTo(55, -52);
+          ctx.lineTo(70, 10);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(0, 14, 108, 22, 0, 0, Math.PI * 2);
+          ctx.fill(); ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 10, 78, Math.PI, Math.PI * 2);
+          ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          if (presetId === "cap_black") {
+            ctx.beginPath();
+            ctx.ellipse(0, 12, 104, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    function renderSlotLayer(ctx, slotName, W, H) {
+      const s = state.slots[slotName];
+      if (!s.enabled) return;
+
+      const cx = s.x * W;
+      const cy = s.y * H;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((s.rot * Math.PI) / 180);
+      ctx.scale(s.scale, s.scale);
+      ctx.globalAlpha = s.opacity;
+
+      if (s.cutCanvas) {
+        const baseW = slotName === "outfit" ? W * 0.68 : (slotName === "glasses" ? W * 0.32 : W * 0.42);
+        const aspect = s.cutCanvas.height / s.cutCanvas.width;
+        const dw = baseW;
+        const dh = baseW * aspect;
+        ctx.drawImage(s.cutCanvas, -dw / 2, -dh / 2, dw, dh);
+      } else {
+        drawStarterVector(ctx, slotName, s.preset, W);
+      }
+      ctx.restore();
+    }
+
+    // ==================== MAIN RENDER LOOP ====================
+    let lastPoseTime = 0;
+    let rafId = null;
+    function renderLoop(now) {
+      const W = 540, H = 720;
+      drawBodySource(mCtx, W, H);
+
+      if (state.sourceMode === "camera" && poseLandmarker && camVideo.readyState >= 2 && now - lastPoseTime > 90) {
+        lastPoseTime = now;
+        try {
+          drawBodySource(srcCtx, W, H);
+          const res = poseLandmarker.detect(srcCanvas);
+          if (res && res.landmarks && res.landmarks[0]) {
+            const lm = res.landmarks[0];
+            const lSh = lm[11], rSh = lm[12], nose = lm[0], lEye = lm[2], rEye = lm[5];
+            if (lSh && rSh) {
+              state.slots.outfit.x = (lSh.x + rSh.x) * 0.5;
+              state.slots.outfit.y = (lSh.y + rSh.y) * 0.5 + 0.18;
+              state.slots.outfit.rot = Math.atan2(lSh.y - rSh.y, lSh.x - rSh.x) * (180 / Math.PI) * 0.35;
+            }
+            if (lEye && rEye) {
+              state.slots.glasses.x = (lEye.x + rEye.x) * 0.5;
+              state.slots.glasses.y = (lEye.y + rEye.y) * 0.5;
+              state.slots.head.x = nose ? nose.x : state.slots.glasses.x;
+              state.slots.head.y = state.slots.glasses.y - 0.11;
+            }
+          }
+        } catch (e) {}
+      }
+
+      renderSlotLayer(mCtx, "outfit", W, H);
+      renderSlotLayer(mCtx, "glasses", W, H);
+      renderSlotLayer(mCtx, "head", W, H);
+
+      rafId = requestAnimationFrame(renderLoop);
+    }
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(renderLoop);
+
+    // ==================== UI CONTROLS & INTERACTION ====================
+    const garmentControls = document.getElementById("garmentControls");
+    const toneControls = document.getElementById("toneControls");
+    const starterGrid = document.getElementById("starterGrid");
+    const uploadSlotLabel = document.getElementById("uploadSlotLabel");
+
+    const rngScale = document.getElementById("rngScale");
+    const rngRotate = document.getElementById("rngRotate");
+    const rngCutout = document.getElementById("rngCutout");
+    const rngOpacity = document.getElementById("rngOpacity");
+
+    function syncSlotUI() {
+      if (state.activeSlot === "tone") {
+        garmentControls.classList.add("hidden");
+        toneControls.classList.remove("hidden");
+        toneControls.classList.add("flex");
+        updateHarmonyUI();
+        return;
+      }
+      toneControls.classList.add("hidden");
+      toneControls.classList.remove("flex");
+      garmentControls.classList.remove("hidden");
+
+      const labels = {
+        outfit: "Tải ảnh Áo từ Shopee / TikTok Shop",
+        glasses: "Tải ảnh Kính từ Shopee / TikTok Shop",
+        head: "Tải ảnh Mũ / Tóc từ Shopee / TikTok Shop",
+      };
+      uploadSlotLabel.textContent = labels[state.activeSlot];
+
+      const s = state.slots[state.activeSlot];
+      rngScale.value = Math.round(s.scale * 100);
+      document.getElementById("valScale").textContent = rngScale.value + "%";
+      rngRotate.value = Math.round(s.rot);
+      document.getElementById("valRotate").textContent = rngRotate.value + "°";
+      rngCutout.value = s.cutout;
+      document.getElementById("valCutout").textContent = s.cutout;
+      rngOpacity.value = Math.round(s.opacity * 100);
+      document.getElementById("valOpacity").textContent = rngOpacity.value + "%";
+
+      starterGrid.innerHTML = "";
+      STARTERS[state.activeSlot].forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const isActive = s.enabled && !s.customImg && s.preset === item.id;
+        btn.className = "py-2 px-1 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center gap-0.5 transition" + (isActive ? " chip-active" : "");
+        btn.innerHTML = `<span class="text-lg leading-none">${item.emoji}</span><span class="text-[10px] font-semibold text-zinc-200 truncate max-w-full">${item.name}</span>`;
+        btn.addEventListener("click", () => {
+          s.enabled = true;
+          s.customImg = null;
+          s.cutCanvas = null;
+          s.preset = item.id;
+          s.color = item.color;
+          syncSlotUI();
+          updateHarmonyUI();
+        });
+        starterGrid.appendChild(btn);
+      });
+    }
+
+    document.querySelectorAll(".slot-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.activeSlot = btn.getAttribute("data-slot");
+        document.querySelectorAll(".slot-tab").forEach((b) => {
+          b.classList.remove("tab-active");
+          b.classList.add("text-zinc-400");
+        });
+        btn.classList.add("tab-active");
+        btn.classList.remove("text-zinc-400");
+        syncSlotUI();
+      });
+    });
+
+    rngScale.addEventListener("input", () => {
+      if (state.activeSlot === "tone") return;
+      state.slots[state.activeSlot].scale = parseInt(rngScale.value, 10) / 100;
+      document.getElementById("valScale").textContent = rngScale.value + "%";
+    });
+    rngRotate.addEventListener("input", () => {
+      if (state.activeSlot === "tone") return;
+      state.slots[state.activeSlot].rot = parseInt(rngRotate.value, 10);
+      document.getElementById("valRotate").textContent = rngRotate.value + "°";
+    });
+    rngOpacity.addEventListener("input", () => {
+      if (state.activeSlot === "tone") return;
+      state.slots[state.activeSlot].opacity = parseInt(rngOpacity.value, 10) / 100;
+      document.getElementById("valOpacity").textContent = rngOpacity.value + "%";
+    });
+    rngCutout.addEventListener("input", () => {
+      if (state.activeSlot === "tone") return;
+      const s = state.slots[state.activeSlot];
+      s.cutout = parseInt(rngCutout.value, 10);
+      document.getElementById("valCutout").textContent = s.cutout;
+      if (s.customImg) {
+        const res = processProductCutout(s.customImg, s.cutout);
+        s.cutCanvas = res.canvas;
+        s.color = res.color;
+        updateHarmonyUI();
+      }
+    });
+
+    document.getElementById("btnClearSlot").addEventListener("click", () => {
+      if (state.activeSlot === "tone") return;
+      state.slots[state.activeSlot].enabled = false;
+      syncSlotUI();
+      showToast("Đã tháo món đồ này");
+    });
+
+    document.getElementById("btnResetActive").addEventListener("click", () => {
+      const defaults = { outfit: { x: 0.5, y: 0.645 }, glasses: { x: 0.5, y: 0.255 }, head: { x: 0.5, y: 0.145 } };
+      const k = state.activeSlot === "tone" ? "outfit" : state.activeSlot;
+      state.slots[k].x = defaults[k].x;
+      state.slots[k].y = defaults[k].y;
+      state.slots[k].scale = 1.0;
+      state.slots[k].rot = 0;
+      syncSlotUI();
+      showToast("Đã đặt lại vị trí món đồ");
+    });
+
+    let dragActive = false;
+    let dragInit = { x: 0, y: 0, sx: 0.5, sy: 0.5 };
+    mirrorCanvas.addEventListener("pointerdown", (e) => {
+      const k = state.activeSlot === "tone" ? "outfit" : state.activeSlot;
+      if (!state.slots[k].enabled) return;
+      dragActive = true;
+      dragInit = { x: e.clientX, y: e.clientY, sx: state.slots[k].x, sy: state.slots[k].y };
+      mirrorCanvas.setPointerCapture(e.pointerId);
+    });
+    mirrorCanvas.addEventListener("pointermove", (e) => {
+      if (!dragActive) return;
+      const k = state.activeSlot === "tone" ? "outfit" : state.activeSlot;
+      const rect = mirrorCanvas.getBoundingClientRect();
+      state.slots[k].x = Math.max(0.05, Math.min(0.95, dragInit.sx + (e.clientX - dragInit.x) / rect.width));
+      state.slots[k].y = Math.max(0.05, Math.min(0.95, dragInit.sy + (e.clientY - dragInit.y) / rect.height));
+    });
+    mirrorCanvas.addEventListener("pointerup", () => { dragActive = false; });
+
+    document.getElementById("itemUploadInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const k = state.activeSlot === "tone" ? "outfit" : state.activeSlot;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const s = state.slots[k];
+          s.customImg = img;
+          s.enabled = true;
+          const res = processProductCutout(img, s.cutout);
+          s.cutCanvas = res.canvas;
+          s.color = res.color;
+          syncSlotUI();
+          updateHarmonyUI();
+          showToast("Đã tách nền ảnh shop & ướm thử!");
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    document.getElementById("bodyPhotoInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          stopCamera();
+          bodyImg = img;
+          state.sourceMode = "photo";
+          setStatus("Ảnh của bạn • Sẵn sàng ướm đồ", "bg-emerald-400");
+          setTimeout(sampleSkinFromSource, 60);
+          showToast("Đã tải ảnh của bạn & tự động quét tông da!");
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    const btnCamToggle = document.getElementById("btnCamToggle");
+    const camLabel = document.getElementById("camLabel");
+    const btnFlipCam = document.getElementById("btnFlipCam");
+
+    async function startCamera() {
+      stopCamera();
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: state.facingMode, width: { ideal: 720 }, height: { ideal: 960 } },
+          audio: false,
+        });
+        camVideo.srcObject = camStream;
+        await camVideo.play();
+        state.sourceMode = "camera";
+        camLabel.textContent = "Tắt Cam";
+        btnFlipCam.classList.remove("hidden");
+        setStatus("Camera AR • Đang hoạt động", "bg-emerald-400");
+        showToast("Đã bật Camera thử đồ!");
+      } catch (err) {
+        showToast("Không mở được Camera — dùng nút Ảnh Bạn để tải ảnh lên nhé!");
+      }
+    }
+    function stopCamera() {
+      if (camStream) { camStream.getTracks().forEach((t) => t.stop()); camStream = null; }
+      camLabel.textContent = "Cam AR";
+      btnFlipCam.classList.add("hidden");
+    }
+    btnCamToggle.addEventListener("click", () => {
+      if (state.sourceMode === "camera") {
+        stopCamera();
+        state.sourceMode = bodyImg ? "photo" : "demo";
+      } else {
+        startCamera();
+      }
+    });
+    btnFlipCam.addEventListener("click", () => {
+      state.facingMode = state.facingMode === "user" ? "environment" : "user";
+      if (state.sourceMode === "camera") startCamera();
+    });
+
+    document.getElementById("btnEnablePoseAI").addEventListener("click", async () => {
+      if (poseLandmarker || state.aiLoading) return;
+      state.aiLoading = true;
+      setStatus("Đang nạp AI Bám Dáng MediaPipe...", "bg-amber-400");
+      try {
+        const mod = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs");
+        const fileset = await mod.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+        poseLandmarker = await mod.PoseLandmarker.createFromOptions(fileset, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+            delegate: "GPU",
+          },
+          runningMode: "IMAGE",
+          numPoses: 1,
+        });
+        state.poseAIReady = true;
+        setStatus("AI Bám Dáng • Đang bật", "bg-emerald-400");
+        showToast("Đã bật AI tự động bám vai & đầu!");
+      } catch (err) {
+        setStatus("Chế độ kéo thả tay mượt", "bg-cyan-400");
+        showToast("Dùng kéo thả tay trực tiếp trên ảnh để căn chuẩn nhé!");
+      } finally {
+        state.aiLoading = false;
+      }
+    });
+
+    document.getElementById("btnRescanSkin").addEventListener("click", () => {
+      sampleSkinFromSource();
+      showToast("Đã đo lại tông da & độ hợp màu!");
+    });
+
+    document.getElementById("btnExportLook").addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.download = "fitmirror_lookbook.png";
+      a.href = mirrorCanvas.toDataURL("image/png");
+      a.click();
+      showToast("Đã lưu ảnh ướm đồ Lookbook (.png)!");
+    });
+
+    syncSlotUI();
+    updateHarmonyUI();
+  </script>
+</body>
+</html>
