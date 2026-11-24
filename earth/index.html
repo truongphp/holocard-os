@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>EarthZoom 3D • Quay Video Bay Từ Vũ Trụ</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#05060c" />
+  <link rel="icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@700&display=swap');
+
+    :root {
+      --bg-base: #05060c;
+      --accent: #00f5ff;
+      --accent-2: #7c3aed;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100dvh; overflow: hidden;
+      background: var(--bg-base); color: #f4f4f6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overscroll-behavior: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .safe-top {
+      padding-top: env(safe-area-inset-top, 0px);
+      min-height: calc(3.25rem + env(safe-area-inset-top, 0px));
+    }
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .chip-active {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.22), rgba(124, 58, 237, 0.25));
+      border-color: #00f5ff !important;
+      color: #ffffff !important;
+    }
+
+    .tab-active {
+      color: #00f5ff;
+      background: rgba(0, 245, 255, 0.12);
+      border-color: rgba(0, 245, 255, 0.35);
+    }
+  </style>
+</head>
+<body class="flex flex-col h-[100dvh] w-full select-none">
+
+  <!-- TOP HEADER -->
+  <header class="safe-top shrink-0 px-3 pb-1.5 bg-[#0b0d17]/95 border-b border-white/10 flex items-center justify-between gap-2 z-20">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 via-indigo-500 to-fuchsia-500 p-[1.5px] shrink-0">
+        <div class="w-full h-full rounded-[10px] bg-[#090b14] flex items-center justify-center">
+          <i data-lucide="globe" class="w-4 h-4 text-cyan-300"></i>
+        </div>
+      </div>
+      <div class="min-w-0 leading-tight">
+        <div class="flex items-center gap-1.5">
+          <span class="font-extrabold text-[13.5px] tracking-tight text-white truncate" style="font-family: 'Space Grotesk', sans-serif;">EarthZoom</span>
+          <span class="px-1.5 py-0.5 rounded bg-gradient-to-r from-cyan-400 to-indigo-400 text-[9px] font-black text-zinc-950">3D</span>
+        </div>
+        <div class="text-[10px] text-zinc-400 truncate">Zoom Vũ Trụ → GPS Ảnh • by Văn Trường</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 shrink-0">
+      <label for="gpsPhotoInput" class="h-8 px-2.5 rounded-xl bg-white/8 hover:bg-white/15 border border-white/12 text-[11px] font-bold text-emerald-300 flex items-center gap-1 cursor-pointer transition">
+        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+        <span>Ảnh GPS</span>
+      </label>
+      <input id="gpsPhotoInput" type="file" accept="image/*" class="hidden" />
+
+      <button id="btnPlayDive" type="button" class="h-8 px-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/45 text-[11px] font-extrabold text-cyan-200 flex items-center gap-1 transition">
+        <i data-lucide="play" class="w-3.5 h-3.5"></i>
+        <span>Bay Thử</span>
+      </button>
+
+      <button id="btnRecordVideo" type="button" class="h-8 px-3 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-[11.5px] font-black text-zinc-950 flex items-center gap-1 shadow-md active:scale-95 transition">
+        <i data-lucide="video" class="w-3.5 h-3.5"></i>
+        <span id="recBtnText">Quay MP4</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
+
+    <!-- 3D CINEMA STAGE -->
+    <section class="relative flex-1 min-h-0 flex flex-col items-center justify-center p-2.5 sm:p-4 bg-[radial-gradient(circle_at_50%_40%,rgba(56,189,248,0.10),transparent_65%),linear-gradient(180deg,#060812_0%,#030408_100%)] overflow-hidden">
+
+      <!-- Floating GPS Status -->
+      <div class="absolute top-2.5 left-3 right-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
+        <div class="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/12 text-[10.5px] font-semibold text-zinc-200">
+          <span id="gpsDot" class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span id="gpsStatusLabel">Hải Phòng, VN • 20.84°N, 106.69°E</span>
+        </div>
+
+        <button id="btnSaveFrame" type="button" class="pointer-events-auto h-7 px-2.5 rounded-full bg-black/75 border border-white/15 text-[10.5px] font-bold text-zinc-200 flex items-center gap-1">
+          <i data-lucide="image" class="w-3 h-3 text-cyan-300"></i>
+          <span>Lưu Ảnh</span>
+        </button>
+      </div>
+
+      <!-- Composite Output Canvas -->
+      <div id="stageFrameWrap" class="relative h-full max-h-[530px] aspect-[9/16] rounded-[26px] p-1 bg-gradient-to-br from-cyan-400/40 via-white/10 to-indigo-500/45 shadow-[0_20px_65px_rgba(0,0,0,0.88)] transition-all">
+        <div class="relative w-full h-full rounded-[22px] overflow-hidden bg-[#020308]">
+          <canvas id="outCanvas" width="540" height="960" class="w-full h-full block"></canvas>
+          <div id="recIndicator" class="hidden absolute top-3 right-3 px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow">
+            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span>REC</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTROL PANEL -->
+    <aside class="shrink-0 lg:w-[390px] bg-[#0d0f1a] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col max-h-[45dvh] lg:max-h-none">
+
+      <!-- Tabs -->
+      <div class="shrink-0 grid grid-cols-3 gap-1 p-2 border-b border-white/10">
+        <button type="button" data-tab="loc" class="ez-tab tab-active py-1.5 rounded-xl border border-transparent text-[11px] font-bold flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+          <span>Tọa Độ GPS</span>
+        </button>
+        <button type="button" data-tab="style" class="ez-tab py-1.5 rounded-xl border border-transparent text-[11px] font-bold text-zinc-400 flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Phong Cách</span>
+        </button>
+        <button type="button" data-tab="cinema" class="ez-tab py-1.5 rounded-xl border border-transparent text-[11px] font-bold text-zinc-400 flex items-center justify-center gap-1.5 transition">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Góc Quay</span>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto no-scrollbar p-3 safe-bottom">
+
+        <!-- TAB 1: LOCATION & GPS -->
+        <div id="tab-loc" class="ez-panel flex flex-col gap-3">
+          <div class="flex gap-1.5">
+            <input id="searchCityInput" type="text" placeholder="Tìm địa điểm (VD: Đà Lạt, Tokyo, Paris...)" class="flex-1 rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400" />
+            <button id="btnSearchCity" type="button" class="px-3 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-xs font-bold text-cyan-200 flex items-center gap-1">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i>
+              <span>Tìm</span>
+            </button>
+          </div>
+
+          <div>
+            <div class="text-[10.5px] font-bold text-zinc-400 mb-1.5">Điểm đến nhanh (1 chạm bay ngay):</div>
+            <div id="cityPresetGrid" class="grid grid-cols-4 gap-1.5"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-zinc-400 mb-1">Tên hiển thị trên video:</label>
+              <input id="titleInput" type="text" value="HẢI PHÒNG • VIỆT NAM" class="w-full rounded-xl bg-black/60 border border-white/15 px-2.5 py-1.5 text-xs font-bold text-white" />
+            </div>
+            <div>
+              <label class="block text-[10px] text-zinc-400 mb-1">Ngày check-in:</label>
+              <input id="dateInput" type="text" value="24/11/2026" class="w-full rounded-xl bg-black/60 border border-white/15 px-2.5 py-1.5 text-xs font-mono text-cyan-200" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-zinc-400 mb-1">Vĩ độ (Lat):</label>
+              <input id="latInput" type="number" step="0.0001" value="20.8449" class="w-full rounded-xl bg-black/60 border border-white/15 px-2.5 py-1.5 text-xs font-mono text-zinc-200" />
+            </div>
+            <div>
+              <label class="block text-[10px] text-zinc-400 mb-1">Kinh độ (Lng):</label>
+              <input id="lngInput" type="number" step="0.0001" value="106.6881" class="w-full rounded-xl bg-black/60 border border-white/15 px-2.5 py-1.5 text-xs font-mono text-zinc-200" />
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: EARTH VISUAL THEME -->
+        <div id="tab-style" class="ez-panel hidden flex-col gap-3">
+          <div>
+            <div class="text-[11px] font-bold text-zinc-300 mb-1.5">Chủ đề Hành Tinh 3D:</div>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-etheme="cyber" class="etheme-btn chip-active py-2.5 px-2 rounded-xl border border-white/12 text-[11px] font-bold flex flex-col items-center gap-1">
+                <span class="text-base">🌃</span>
+                <span>Cyber Night</span>
+              </button>
+              <button type="button" data-etheme="blue" class="etheme-btn py-2.5 px-2 rounded-xl border border-white/12 text-[11px] font-bold text-sky-300 flex flex-col items-center gap-1">
+                <span class="text-base">🌍</span>
+                <span>Hành Tinh Xanh</span>
+              </button>
+              <button type="button" data-etheme="radar" class="etheme-btn py-2.5 px-2 rounded-xl border border-white/12 text-[11px] font-bold text-emerald-300 flex flex-col items-center gap-1">
+                <span class="text-base">🛰️</span>
+                <span>Radar Vệ Tinh</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-2.5">
+            <div>
+              <div class="text-xs font-bold text-white">Hiển thị HUD Độ cao &amp; Tọa độ</div>
+              <div class="text-[10px] text-zinc-400">Hiển thị số km lao xuống kiểu vệ tinh</div>
+            </div>
+            <button id="btnToggleHUD" type="button" class="px-3 py-1 rounded-full bg-cyan-400 text-zinc-950 text-[11px] font-black">BẬT</button>
+          </div>
+        </div>
+
+        <!-- TAB 3: CINEMA RATIO & DURATION -->
+        <div id="tab-cinema" class="ez-panel hidden flex-col gap-3">
+          <div>
+            <div class="text-[11px] font-bold text-zinc-300 mb-1.5">Tỷ lệ khung hình xuất video:</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-ratio="9:16" class="ratio-btn chip-active py-2 rounded-xl border border-white/12 text-xs font-bold">9:16 • TikTok / Reels</button>
+              <button type="button" data-ratio="1:1" class="ratio-btn py-2 rounded-xl border border-white/12 text-xs font-bold text-zinc-300">1:1 • Locket Vuông</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[11px] font-bold text-zinc-300 mb-1.5">Thời lượng cú bay (giây):</div>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-dur="4" class="dur-btn py-2 rounded-xl border border-white/12 text-xs font-bold text-zinc-300">4 giây (Nhanh)</button>
+              <button type="button" data-dur="6" class="dur-btn chip-active py-2 rounded-xl border border-white/12 text-xs font-bold">6 giây (Chuẩn)</button>
+              <button type="button" data-dur="8" class="dur-btn py-2 rounded-xl border border-white/12 text-xs font-bold text-zinc-300">8 giây (Chill)</button>
+            </div>
+          </div>
+
+          <p class="text-[10.5px] text-zinc-400 leading-relaxed">
+            Mẹo: Tải ảnh chụp gốc từ camera iPhone bằng nút <span class="text-emerald-300 font-semibold">Ảnh GPS</span> — hệ thống sẽ tự đọc tọa độ EXIF ẩn trong ảnh để khóa đúng vị trí bạn từng chụp!
+          </p>
+        </div>
+
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-full bg-zinc-900/95 border border-cyan-400/40 text-xs font-semibold text-cyan-200 shadow-lg whitespace-nowrap"></div>
+
+  <script>
+    lucide.createIcons();
+
+    // ==================== STATE ====================
+    const state = {
+      lat: 20.8449,
+      lng: 106.6881,
+      title: "HẢI PHÒNG • VIỆT NAM",
+      dateStr: "24/11/2026",
+      theme: "cyber", // "cyber" | "blue" | "radar"
+      ratio: "9:16",  // "9:16" | "1:1"
+      durationSec: 6,
+      showHUD: true,
+      diving: false,
+      diveStart: 0,
+      diveProgress: 0, // 0..1
+      photoImg: null,
+      recording: false,
+    };
+
+    const CITIES = [
+      { name: "Hải Phòng", label: "HẢI PHÒNG • VIỆT NAM", lat: 20.8449, lng: 106.6881 },
+      { name: "Hà Nội", label: "HÀ NỘI • VIỆT NAM", lat: 21.0285, lng: 105.8542 },
+      { name: "TP.HCM", label: "TP. HỒ CHÍ MINH • VN", lat: 10.8231, lng: 106.6297 },
+      { name: "Đà Nẵng", label: "ĐÀ NẴNG • VIỆT NAM", lat: 16.0544, lng: 108.2022 },
+      { name: "Đà Lạt", label: "ĐÀ LẠT • LÂM ĐỒNG", lat: 11.9404, lng: 108.4583 },
+      { name: "Tokyo", label: "TOKYO • JAPAN", lat: 35.6762, lng: 139.6503 },
+      { name: "Seoul", label: "SEOUL • KOREA", lat: 37.5665, lng: 126.9780 },
+      { name: "Paris", label: "PARIS • FRANCE", lat: 48.8566, lng: 2.3522 },
+    ];
+
+    const outCanvas = document.getElementById("outCanvas");
+    const outCtx = outCanvas.getContext("2d");
+    const stageFrameWrap = document.getElementById("stageFrameWrap");
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.add("hidden"), 2500);
+    }
+
+    function updateGpsBadge() {
+      const ns = state.lat >= 0 ? "N" : "S";
+      const ew = state.lng >= 0 ? "E" : "W";
+      document.getElementById("gpsStatusLabel").textContent =
+        `${state.title.split("•")[0].trim()} • ${Math.abs(state.lat).toFixed(2)}°${ns}, ${Math.abs(state.lng).toFixed(2)}°${ew}`;
+    }
+
+    // ==================== PURE-JS BINARY EXIF GPS PARSER (ZERO DEPENDENCIES) ====================
+    function extractExifGPS(arrayBuffer) {
+      const view = new DataView(arrayBuffer);
+      if (view.byteLength < 12 || view.getUint16(0, false) !== 0xFFD8) return null;
+      let offset = 2;
+      while (offset + 4 < view.byteLength) {
+        const marker = view.getUint16(offset, false);
+        offset += 2;
+        if (marker === 0xFFE1) {
+          if (view.getUint32(offset + 2, false) !== 0x45786966) return null;
+          const tiffStart = offset + 8;
+          const little = view.getUint16(tiffStart, false) === 0x4949;
+          const firstIFD = view.getUint32(tiffStart + 4, little);
+          const ifd0 = tiffStart + firstIFD;
+          const entries = view.getUint16(ifd0, little);
+          let gpsOffset = 0;
+          for (let i = 0; i < entries; i++) {
+            const eOff = ifd0 + 2 + i * 12;
+            const tag = view.getUint16(eOff, little);
+            if (tag === 0x8825) {
+              gpsOffset = tiffStart + view.getUint32(eOff + 8, little);
+              break;
+            }
+          }
+          if (!gpsOffset || gpsOffset + 2 > view.byteLength) return null;
+          const gpsEntries = view.getUint16(gpsOffset, little);
+          let latRef = "N", lngRef = "E", latVals = null, lngVals = null;
+          const readRat3 = (off) => {
+            const out = [];
+            for (let k = 0; k < 3; k++) {
+              const num = view.getUint32(off + k * 8, little);
+              const den = view.getUint32(off + k * 8 + 4, little) || 1;
+              out.push(num / den);
+            }
+            return out;
+          };
+          for (let i = 0; i < gpsEntries; i++) {
+            const eOff = gpsOffset + 2 + i * 12;
+            const tag = view.getUint16(eOff, little);
+            if (tag === 1) latRef = String.fromCharCode(view.getUint8(eOff + 8));
+            else if (tag === 2) latVals = readRat3(tiffStart + view.getUint32(eOff + 8, little));
+            else if (tag === 3) lngRef = String.fromCharCode(view.getUint8(eOff + 8));
+            else if (tag === 4) lngVals = readRat3(tiffStart + view.getUint32(eOff + 8, little));
+          }
+          if (latVals && lngVals) {
+            let lat = latVals[0] + latVals[1] / 60 + latVals[2] / 3600;
+            let lng = lngVals[0] + lngVals[1] / 60 + lngVals[2] / 3600;
+            if (latRef === "S") lat = -lat;
+            if (lngRef === "W") lng = -lng;
+            if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
+          }
+          return null;
+        } else if ((marker & 0xFF00) !== 0xFF00) {
+          break;
+        } else {
+          offset += view.getUint16(offset, false);
+        }
+      }
+      return null;
+    }
+
+    // ==================== THREE.JS PROCEDURAL 3D EARTH ====================
+    const glCanvas = document.createElement("canvas");
+    glCanvas.width = 540; glCanvas.height = 960;
+    let renderer = null, scene = null, camera = null, earthMesh = null, cloudMesh = null, pinGroup = null, starPoints = null;
+
+    function buildEarthTexture(theme) {
+      const tw = 1024, th = 512;
+      const c = document.createElement("canvas");
+      c.width = tw; c.height = th;
+      const ctx = c.getContext("2d");
+
+      const ocean = ctx.createLinearGradient(0, 0, 0, th);
+      if (theme === "blue") {
+        ocean.addColorStop(0, "#0b2545");
+        ocean.addColorStop(0.5, "#0e4d8b");
+        ocean.addColorStop(1, "#0b2545");
+      } else if (theme === "radar") {
+        ocean.addColorStop(0, "#021410");
+        ocean.addColorStop(0.5, "#04261c");
+        ocean.addColorStop(1, "#021410");
+      } else {
+        ocean.addColorStop(0, "#040714");
+        ocean.addColorStop(0.5, "#08142c");
+        ocean.addColorStop(1, "#040714");
+      }
+      ctx.fillStyle = ocean;
+      ctx.fillRect(0, 0, tw, th);
+
+      ctx.strokeStyle = theme === "radar" ? "rgba(16,185,129,0.22)" : (theme === "cyber" ? "rgba(0,245,255,0.14)" : "rgba(255,255,255,0.08)");
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= tw; x += tw / 18) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, th); ctx.stroke();
+      }
+      for (let y = 0; y <= th; y += th / 9) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(tw, y); ctx.stroke();
+      }
+
+      const ll = (lng, lat) => [((lng + 180) / 360) * tw, ((90 - lat) / 180) * th];
+      const landmasses = [
+        [[-10,36],[10,44],[30,45],[45,58],[75,70],[135,68],[165,62],[142,45],[125,38],[120,24],[109,12],[104,2],[98,16],[80,8],[66,24],[52,26],[36,34],[26,38],[12,41]],
+        [[-17,15],[-6,35],[10,37],[32,31],[43,12],[51,11],[40,-12],[28,-33],[18,-34],[12,-15],[8,4],[-8,5]],
+        [[-165,64],[-130,68],[-85,68],[-60,48],[-75,30],[-82,25],[-96,18],[-105,20],[-124,40],[-138,58]],
+        [[-78,9],[-60,10],[-35,-6],[-42,-23],[-58,-38],[-68,-54],[-74,-40],[-81,-5]],
+        [[114,-22],[130,-12],[145,-15],[153,-28],[142,-38],[116,-34]],
+        [[130,32],[141,43],[144,41],[136,34]],
+      ];
+
+      ctx.fillStyle = theme === "blue" ? "#1e7a52" : (theme === "radar" ? "rgba(16,185,129,0.28)" : "#132347");
+      ctx.strokeStyle = theme === "blue" ? "#4ade80" : (theme === "radar" ? "#34d399" : "#00f5ff");
+      ctx.lineWidth = 2.2;
+      landmasses.forEach((poly) => {
+        ctx.beginPath();
+        poly.forEach(([lng, lat], idx) => {
+          const [px, py] = ll(lng, lat);
+          if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      const hubs = [
+        [106.7, 20.8], [105.8, 21.0], [106.6, 10.8], [139.7, 35.7], [127.0, 37.6],
+        [121.5, 31.2], [114.1, 22.3], [103.8, 1.3], [2.3, 48.8], [-0.1, 51.5],
+        [-74.0, 40.7], [-118.2, 34.0], [151.2, -33.8], [55.3, 25.2], [77.2, 28.6]
+      ];
+      hubs.forEach(([lng, lat]) => {
+        const [px, py] = ll(lng, lat);
+        const g = ctx.createRadialGradient(px, py, 0, px, py, 16);
+        g.addColorStop(0, theme === "radar" ? "rgba(52,211,153,0.95)" : "rgba(253,224,71,0.95)");
+        g.addColorStop(1, "transparent");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(px, py, 16, 0, Math.PI * 2); ctx.fill();
+      });
+
+      return new THREE.CanvasTexture(c);
+    }
+
+    function latLngToVec3(lat, lng, radius) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lng + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -radius * Math.sin(phi) * Math.cos(theta),
+        radius * Math.cos(phi),
+        radius * Math.sin(phi) * Math.sin(theta)
+      );
+    }
+
+    function initThreeEarth() {
+      if (typeof THREE === "undefined") return;
+      renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
+      renderer.setSize(outCanvas.width, outCanvas.height, false);
+      renderer.setClearColor(0x03040a, 1);
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(42, outCanvas.width / outCanvas.height, 0.05, 100);
+      camera.position.set(0, 0.8, 4.6);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+      const sun = new THREE.DirectionalLight(0x88eeff, 1.15);
+      sun.position.set(5, 3, 5);
+      scene.add(sun);
+
+      const starGeo = new THREE.BufferGeometry();
+      const starPos = new Float32Array(900 * 3);
+      for (let i = 0; i < 900; i++) {
+        const r = 12 + Math.random() * 22;
+        const th = Math.random() * Math.PI * 2;
+        const ph = Math.acos(2 * Math.random() - 1);
+        starPos[i * 3] = r * Math.sin(ph) * Math.cos(th);
+        starPos[i * 3 + 1] = r * Math.cos(ph);
+        starPos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+      }
+      starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
+      starPoints = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xe0f2fe, size: 0.09, transparent: true, opacity: 0.85 }));
+      scene.add(starPoints);
+
+      const geo = new THREE.SphereGeometry(1.35, 64, 48);
+      const mat = new THREE.MeshPhongMaterial({
+        map: buildEarthTexture(state.theme),
+        specular: new THREE.Color(0x22d3ee),
+        shininess: 18,
+      });
+      earthMesh = new THREE.Mesh(geo, mat);
+      scene.add(earthMesh);
+
+      const atmoGeo = new THREE.SphereGeometry(1.42, 48, 36);
+      const atmoMat = new THREE.MeshBasicMaterial({
+        color: 0x00f5ff,
+        transparent: true,
+        opacity: 0.12,
+        side: THREE.BackSide,
+      });
+      cloudMesh = new THREE.Mesh(atmoGeo, atmoMat);
+      scene.add(cloudMesh);
+
+      pinGroup = new THREE.Group();
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.036, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xff00e5 })
+      );
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.055, 0.085, 32),
+        new THREE.MeshBasicMaterial({ color: 0x00f5ff, side: THREE.DoubleSide, transparent: true, opacity: 0.9 })
+      );
+      pinGroup.add(dot);
+      pinGroup.add(ring);
+      earthMesh.add(pinGroup);
+      positionPin();
+    }
+
+    function positionPin() {
+      if (!pinGroup) return;
+      const pos = latLngToVec3(state.lat, state.lng, 1.375);
+      pinGroup.position.copy(pos);
+      pinGroup.lookAt(pos.clone().multiplyScalar(2));
+    }
+
+    function applyEarthTheme(theme) {
+      state.theme = theme;
+      if (earthMesh) {
+        earthMesh.material.map = buildEarthTexture(theme);
+        earthMesh.material.needsUpdate = true;
+      }
+      if (cloudMesh) {
+        cloudMesh.material.color.setHex(theme === "radar" ? 0x10b981 : (theme === "blue" ? 0x38bdf8 : 0x00f5ff));
+      }
+    }
+
+    // ==================== CINEMA COMPOSITOR (3D EARTH + CLOUD DIVE + PHOTO CARD + HUD) ====================
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function renderComposite(nowMs) {
+      const W = outCanvas.width, H = outCanvas.height;
+      let p = 0;
+      if (state.diving) {
+        const elapsed = (nowMs - state.diveStart) / 1000;
+        p = Math.min(1, elapsed / state.durationSec);
+        state.diveProgress = p;
+        if (p >= 1) {
+          state.diving = false;
+        }
+      } else {
+        p = state.diveProgress;
+      }
+
+      const targetDir = latLngToVec3(state.lat, state.lng, 1).normalize();
+
+      if (renderer && scene && camera) {
+        if (p === 0) {
+          const idleAngle = Math.sin(nowMs * 0.0004) * 0.35;
+          const camDir = targetDir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), idleAngle);
+          camera.position.copy(camDir.multiplyScalar(4.4));
+          camera.lookAt(0, 0, 0);
+        } else {
+          const orbitT = Math.min(1, p / 0.38);
+          const diveT = Math.max(0, Math.min(1, (p - 0.36) / 0.40));
+          const rotOffset = (1 - easeInOutCubic(orbitT)) * 1.15;
+          const dist = 4.4 - easeInOutCubic(diveT) * 2.95;
+          const camDir = targetDir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), rotOffset);
+          camera.position.copy(camDir.multiplyScalar(dist));
+          camera.lookAt(0, 0, 0);
+        }
+
+        if (pinGroup && pinGroup.children[1]) {
+          const s = 1 + Math.sin(nowMs * 0.008) * 0.35;
+          pinGroup.children[1].scale.set(s, s, 1);
+        }
+        renderer.render(scene, camera);
+        outCtx.drawImage(glCanvas, 0, 0, W, H);
+      } else {
+        outCtx.fillStyle = "#04060e";
+        outCtx.fillRect(0, 0, W, H);
+      }
+
+      if (p > 0.54 && p < 0.88) {
+        const flash = Math.sin(((p - 0.54) / 0.34) * Math.PI);
+        outCtx.save();
+        const grad = outCtx.createRadialGradient(W / 2, H / 2, W * 0.05, W / 2, H / 2, W * 0.75);
+        grad.addColorStop(0, `rgba(224, 242, 254, ${(flash * 0.88).toFixed(3)})`);
+        grad.addColorStop(0.5, `rgba(56, 189, 248, ${(flash * 0.45).toFixed(3)})`);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        outCtx.fillStyle = grad;
+        outCtx.fillRect(0, 0, W, H);
+        outCtx.restore();
+      }
+
+      if (p >= 0.72) {
+        const reveal = easeInOutCubic(Math.min(1, (p - 0.72) / 0.24));
+        outCtx.save();
+        outCtx.fillStyle = `rgba(5, 7, 15, ${(reveal * 0.82).toFixed(3)})`;
+        outCtx.fillRect(0, 0, W, H);
+
+        const cardW = W * 0.82;
+        const cardH = state.ratio === "9:16" ? H * 0.58 : H * 0.72;
+        const scale = 0.78 + reveal * 0.22;
+        outCtx.globalAlpha = reveal;
+        outCtx.translate(W / 2, H / 2);
+        outCtx.scale(scale, scale);
+
+        outCtx.fillStyle = "rgba(18, 22, 38, 0.94)";
+        outCtx.strokeStyle = "rgba(0, 245, 255, 0.65)";
+        outCtx.lineWidth = 3;
+        outCtx.beginPath();
+        outCtx.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 26);
+        outCtx.fill();
+        outCtx.stroke();
+
+        const pad = 16;
+        const phW = cardW - pad * 2;
+        const phH = cardH - 108;
+        outCtx.save();
+        outCtx.beginPath();
+        outCtx.roundRect(-phW / 2, -cardH / 2 + pad, phW, phH, 18);
+        outCtx.clip();
+
+        if (state.photoImg) {
+          const iw = state.photoImg.naturalWidth || state.photoImg.width;
+          const ih = state.photoImg.naturalHeight || state.photoImg.height;
+          const tr = phW / phH;
+          let sx = 0, sy = 0, sw = iw, sh = ih;
+          if (iw / ih > tr) { sw = ih * tr; sx = (iw - sw) / 2; }
+          else { sh = iw / tr; sy = (ih - sh) / 2; }
+          outCtx.drawImage(state.photoImg, sx, sy, sw, sh, -phW / 2, -cardH / 2 + pad, phW, phH);
+        } else {
+          const pg = outCtx.createLinearGradient(-phW / 2, -cardH / 2, phW / 2, cardH / 2);
+          pg.addColorStop(0, "#0f172a");
+          pg.addColorStop(0.5, "#1d4ed8");
+          pg.addColorStop(1, "#7c3aed");
+          outCtx.fillStyle = pg;
+          outCtx.fillRect(-phW / 2, -cardH / 2 + pad, phW, phH);
+          outCtx.fillStyle = "rgba(255,255,255,0.9)";
+          outCtx.font = "800 28px 'Space Grotesk', sans-serif";
+          outCtx.textAlign = "center";
+          outCtx.fillText("📍 CHECK-IN", 0, -24);
+          outCtx.font = "600 16px 'Inter', sans-serif";
+          outCtx.fillStyle = "rgba(224,242,254,0.85)";
+          outCtx.fillText("Tải ảnh của bạn để hiện tại đây", 0, 14);
+        }
+        outCtx.restore();
+
+        outCtx.fillStyle = "#ffffff";
+        outCtx.font = "800 22px 'Space Grotesk', sans-serif";
+        outCtx.textAlign = "center";
+        outCtx.fillText(state.title, 0, cardH / 2 - 52, cardW - 36);
+
+        const ns = state.lat >= 0 ? "N" : "S";
+        const ew = state.lng >= 0 ? "E" : "W";
+        outCtx.fillStyle = "#38bdf8";
+        outCtx.font = "600 14px 'JetBrains Mono', monospace";
+        outCtx.fillText(`${Math.abs(state.lat).toFixed(4)}°${ns}  ${Math.abs(state.lng).toFixed(4)}°${ew}  •  ${state.dateStr}`, 0, cardH / 2 - 22, cardW - 36);
+
+        outCtx.restore();
+      }
+
+      if (state.showHUD) {
+        const altKm = p < 0.72
+          ? Math.max(0.4, 12800 * Math.pow(1 - Math.min(1, p / 0.72), 2.3))
+          : 0.2;
+        outCtx.save();
+        outCtx.fillStyle = "rgba(0, 245, 255, 0.85)";
+        outCtx.font = "700 13px 'JetBrains Mono', monospace";
+        outCtx.textAlign = "left";
+        outCtx.fillText("ALT: " + (altKm >= 100 ? Math.round(altKm).toLocaleString("en-US") : altKm.toFixed(1)) + " KM", 22, H - 46);
+        outCtx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        outCtx.font = "500 12px 'JetBrains Mono', monospace";
+        outCtx.fillText("SAT-LOCK // " + state.title.slice(0, 24), 22, H - 26);
+        outCtx.restore();
+      }
+    }
+
+    let animId = null;
+    function tick(now) {
+      renderComposite(now);
+      animId = requestAnimationFrame(tick);
+    }
+
+    // ==================== CONTROLS & WIRING ====================
+    const cityPresetGrid = document.getElementById("cityPresetGrid");
+    CITIES.forEach((c, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "city-btn py-1.5 px-1 rounded-xl bg-white/5 border border-white/10 text-[10.5px] font-bold text-zinc-200 truncate transition" + (idx === 0 ? " chip-active" : "");
+      btn.textContent = c.name;
+      btn.addEventListener("click", () => {
+        state.lat = c.lat;
+        state.lng = c.lng;
+        state.title = c.label;
+        document.getElementById("latInput").value = c.lat;
+        document.getElementById("lngInput").value = c.lng;
+        document.getElementById("titleInput").value = c.label;
+        cityPresetGrid.querySelectorAll(".city-btn").forEach((b) => b.classList.remove("chip-active"));
+        btn.classList.add("chip-active");
+        positionPin();
+        updateGpsBadge();
+        startDive();
+      });
+      cityPresetGrid.appendChild(btn);
+    });
+
+    function startDive() {
+      state.diveProgress = 0;
+      state.diving = true;
+      state.diveStart = performance.now();
+    }
+
+    document.getElementById("btnPlayDive").addEventListener("click", startDive);
+
+    document.querySelectorAll(".ez-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const t = btn.getAttribute("data-tab");
+        document.querySelectorAll(".ez-tab").forEach((b) => { b.classList.remove("tab-active"); b.classList.add("text-zinc-400"); });
+        btn.classList.add("tab-active"); btn.classList.remove("text-zinc-400");
+        document.querySelectorAll(".ez-panel").forEach((p) => { p.classList.add("hidden"); p.classList.remove("flex"); });
+        const panel = document.getElementById("tab-" + t);
+        if (panel) { panel.classList.remove("hidden"); panel.classList.add("flex"); }
+      });
+    });
+
+    document.getElementById("titleInput").addEventListener("input", (e) => { state.title = e.target.value || "EARTHZOOM"; updateGpsBadge(); });
+    document.getElementById("dateInput").addEventListener("input", (e) => { state.dateStr = e.target.value; });
+    document.getElementById("latInput").addEventListener("input", (e) => {
+      const v = parseFloat(e.target.value);
+      if (!Number.isNaN(v)) { state.lat = Math.max(-90, Math.min(90, v)); positionPin(); updateGpsBadge(); }
+    });
+    document.getElementById("lngInput").addEventListener("input", (e) => {
+      const v = parseFloat(e.target.value);
+      if (!Number.isNaN(v)) { state.lng = Math.max(-180, Math.min(180, v)); positionPin(); updateGpsBadge(); }
+    });
+
+    document.getElementById("btnSearchCity").addEventListener("click", async () => {
+      const q = document.getElementById("searchCityInput").value.trim();
+      if (!q) return;
+      showToast("Đang dò tọa độ vệ tinh...");
+      try {
+        const res = await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(q));
+        const data = await res.json();
+        if (data && data[0]) {
+          state.lat = parseFloat(data[0].lat);
+          state.lng = parseFloat(data[0].lon);
+          state.title = q.toUpperCase();
+          document.getElementById("latInput").value = state.lat.toFixed(4);
+          document.getElementById("lngInput").value = state.lng.toFixed(4);
+          document.getElementById("titleInput").value = state.title;
+          positionPin();
+          updateGpsBadge();
+          startDive();
+          showToast("Đã khóa tọa độ: " + state.title);
+        } else {
+          showToast("Không tìm thấy địa điểm này");
+        }
+      } catch (err) {
+        showToast("Không tìm được lúc này — hãy chọn điểm nhanh nhé!");
+      }
+    });
+
+    document.getElementById("gpsPhotoInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const abReader = new FileReader();
+      abReader.onload = () => {
+        const gps = extractExifGPS(abReader.result);
+        if (gps) {
+          state.lat = gps.lat;
+          state.lng = gps.lng;
+          document.getElementById("latInput").value = gps.lat.toFixed(4);
+          document.getElementById("lngInput").value = gps.lng.toFixed(4);
+          positionPin();
+          updateGpsBadge();
+          showToast(`Đã đọc GPS thật từ ảnh: ${gps.lat.toFixed(3)}, ${gps.lng.toFixed(3)}!`);
+        } else {
+          showToast("Ảnh không kèm GPS EXIF — giữ tọa độ hiện tại!");
+        }
+      };
+      abReader.readAsArrayBuffer(file);
+
+      const imgReader = new FileReader();
+      imgReader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          state.photoImg = img;
+          startDive();
+        };
+        img.src = imgReader.result;
+      };
+      imgReader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    document.querySelectorAll(".etheme-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        applyEarthTheme(btn.getAttribute("data-etheme"));
+        document.querySelectorAll(".etheme-btn").forEach((b) => b.classList.remove("chip-active"));
+        btn.classList.add("chip-active");
+      });
+    });
+
+    const btnToggleHUD = document.getElementById("btnToggleHUD");
+    btnToggleHUD.addEventListener("click", () => {
+      state.showHUD = !state.showHUD;
+      btnToggleHUD.textContent = state.showHUD ? "BẬT" : "TẮT";
+      btnToggleHUD.className = state.showHUD
+        ? "px-3 py-1 rounded-full bg-cyan-400 text-zinc-950 text-[11px] font-black"
+        : "px-3 py-1 rounded-full bg-white/10 text-zinc-300 text-[11px] font-bold";
+    });
+
+    document.querySelectorAll(".ratio-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const r = btn.getAttribute("data-ratio");
+        state.ratio = r;
+        document.querySelectorAll(".ratio-btn").forEach((b) => b.classList.remove("chip-active"));
+        btn.classList.add("chip-active");
+        if (r === "1:1") {
+          outCanvas.width = 640; outCanvas.height = 640;
+          glCanvas.width = 640; glCanvas.height = 640;
+          stageFrameWrap.classList.remove("aspect-[9/16]");
+          stageFrameWrap.classList.add("aspect-square");
+        } else {
+          outCanvas.width = 540; outCanvas.height = 960;
+          glCanvas.width = 540; glCanvas.height = 960;
+          stageFrameWrap.classList.remove("aspect-square");
+          stageFrameWrap.classList.add("aspect-[9/16]");
+        }
+        if (renderer && camera) {
+          renderer.setSize(outCanvas.width, outCanvas.height, false);
+          camera.aspect = outCanvas.width / outCanvas.height;
+          camera.updateProjectionMatrix();
+        }
+      });
+    });
+
+    document.querySelectorAll(".dur-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.durationSec = parseInt(btn.getAttribute("data-dur"), 10) || 6;
+        document.querySelectorAll(".dur-btn").forEach((b) => b.classList.remove("chip-active"));
+        btn.classList.add("chip-active");
+      });
+    });
+
+    document.getElementById("btnSaveFrame").addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.download = "earthzoom_3d_frame.png";
+      a.href = outCanvas.toDataURL("image/png");
+      a.click();
+      showToast("Đã lưu ảnh khung hình 3D!");
+    });
+
+    document.getElementById("btnRecordVideo").addEventListener("click", () => {
+      if (state.recording) return;
+      if (typeof MediaRecorder === "undefined" || !outCanvas.captureStream) {
+        showToast("Trình duyệt không hỗ trợ ghi video trực tiếp — hãy dùng Lưu Ảnh nhé!");
+        return;
+      }
+      state.recording = true;
+      document.getElementById("recIndicator").classList.remove("hidden");
+      document.getElementById("recBtnText").textContent = "Đang quay...";
+
+      startDive();
+      const stream = outCanvas.captureStream(30);
+      const mime = MediaRecorder.isTypeSupported("video/mp4")
+        ? "video/mp4"
+        : (MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm");
+      const ext = mime.includes("mp4") ? "mp4" : "webm";
+      const chunks = [];
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3200000 });
+      rec.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+      rec.onstop = () => {
+        state.recording = false;
+        document.getElementById("recIndicator").classList.add("hidden");
+        document.getElementById("recBtnText").textContent = "Quay MP4";
+        const blob = new Blob(chunks, { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "earthzoom_3d." + ext;
+        a.click();
+        showToast("Đã xuất video EarthZoom 3D (." + ext + ")!");
+      };
+      rec.start();
+      setTimeout(() => { if (rec.state === "recording") rec.stop(); }, (state.durationSec + 0.6) * 1000);
+    });
+
+    initThreeEarth();
+    updateGpsBadge();
+    if (animId) cancelAnimationFrame(animId);
+    animId = requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
