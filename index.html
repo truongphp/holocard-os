@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Văn Trường - Dev Free • HoloCard OS</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#05050a" />
+  <link rel="icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <link rel="apple-touch-icon" href="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap');
+
+    :root {
+      --bg-void: #05050a;
+      --neon-1: #00f5ff;
+      --neon-2: #ff00e5;
+      --neon-3: #7c3aed;
+      --mx: 50%;
+      --my: 50%;
+      --rx: 0deg;
+      --ry: 0deg;
+      --holo-angle: 125deg;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: var(--bg-void);
+      color: #f8fafc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: radial-gradient(rgba(255,255,255,0.6) 1px, transparent 0);
+      background-size: 22px 22px;
+    }
+
+    /* 3D Hologram Card */
+    .holo-stage {
+      perspective: 1200px;
+    }
+
+    .holo-card {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1);
+      background: linear-gradient(145deg, rgba(16, 18, 32, 0.90), rgba(8, 9, 18, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 20px 55px rgba(0, 0, 0, 0.78),
+        0 0 36px -8px color-mix(in srgb, var(--neon-1) 45%, transparent),
+        0 0 42px -10px color-mix(in srgb, var(--neon-2) 38%, transparent);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      overflow: hidden;
+    }
+
+    .holo-foil {
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.03) 34%, transparent 64%),
+        linear-gradient(
+          var(--holo-angle),
+          transparent 15%,
+          color-mix(in srgb, var(--neon-1) 24%, transparent) 34%,
+          color-mix(in srgb, var(--neon-2) 24%, transparent) 50%,
+          color-mix(in srgb, var(--neon-3) 26%, transparent) 66%,
+          transparent 85%
+        );
+      mix-blend-mode: screen;
+      opacity: 0.85;
+      z-index: 1;
+    }
+
+    .holo-border-glow {
+      position: relative;
+    }
+
+    .holo-border-glow::before {
+      content: "";
+      position: absolute;
+      inset: -1.5px;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: linear-gradient(var(--holo-angle), var(--neon-1), var(--neon-2), var(--neon-3), var(--neon-1));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* STATIC Avatar + Independent 7-Color Spectrum Ring (Never rotates the photo) */
+    @keyframes ringRotate {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes ringBeatGlow {
+      0%, 100% { transform: scale(1); opacity: 0.72; }
+      50% { transform: scale(1.07); opacity: 1; }
+    }
+
+    .avatar-wrap {
+      position: relative;
+      width: 82px;
+      height: 82px;
+      flex-shrink: 0;
+    }
+
+    .avatar-spectrum-glow {
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      background: conic-gradient(
+        from 0deg,
+        #ff2a5f,
+        #ff8a00,
+        #ffe600,
+        #00f59b,
+        #00d4ff,
+        #7c3aed,
+        #ff00e5,
+        #ff2a5f
+      );
+      filter: blur(8px);
+      opacity: 0.65;
+      animation: ringRotate 4.5s linear infinite, ringBeatGlow 1.15s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .avatar-spectrum-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: conic-gradient(
+        from 0deg,
+        #ff2a5f,
+        #ff8a00,
+        #ffe600,
+        #00f59b,
+        #00d4ff,
+        #7c3aed,
+        #ff00e5,
+        #ff2a5f
+      );
+      animation: ringRotate 3.6s linear infinite;
+      pointer-events: none;
+    }
+
+    .avatar-static-photo {
+      position: absolute;
+      inset: 3px;
+      border-radius: 9999px;
+      background: #07070d;
+      padding: 2px;
+      z-index: 2;
+    }
+
+    .avatar-wrap.is-playing .avatar-spectrum-glow {
+      animation: ringRotate 2.4s linear infinite, ringBeatGlow 0.62s ease-in-out infinite;
+    }
+
+    /* Prominent Social Hero Cards */
+    .social-hero-tiktok {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 0, 80, 0.17), rgba(0, 242, 234, 0.14) 55%, rgba(12, 13, 24, 0.94));
+      border: 1px solid rgba(0, 242, 234, 0.48);
+      box-shadow: 0 12px 35px -8px rgba(0, 242, 234, 0.36), 0 0 24px -8px rgba(255, 0, 80, 0.36);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .social-hero-tiktok:hover, .social-hero-tiktok:active {
+      transform: translateY(-2px) scale(1.012);
+      box-shadow: 0 18px 42px -6px rgba(0, 242, 234, 0.52), 0 0 30px -6px rgba(255, 0, 80, 0.48);
+    }
+
+    .social-hero-youtube {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 0, 51, 0.22), rgba(217, 70, 239, 0.14) 55%, rgba(12, 13, 24, 0.94));
+      border: 1px solid rgba(255, 45, 85, 0.52);
+      box-shadow: 0 12px 35px -8px rgba(255, 0, 51, 0.38), 0 0 24px -8px rgba(217, 70, 239, 0.32);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .social-hero-youtube:hover, .social-hero-youtube:active {
+      transform: translateY(-2px) scale(1.012);
+      box-shadow: 0 18px 42px -6px rgba(255, 0, 51, 0.55), 0 0 30px -6px rgba(217, 70, 239, 0.45);
+    }
+
+    .util-card {
+      background: rgba(16, 17, 29, 0.76);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+    .util-card:hover, .util-card:active {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--neon-1) 55%, rgba(255,255,255,0.22));
+      background: rgba(24, 26, 44, 0.88);
+    }
+
+    .instant-tool-btn {
+      background: linear-gradient(155deg, rgba(22, 24, 42, 0.86), rgba(11, 12, 22, 0.92));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .instant-tool-btn:hover, .instant-tool-btn:active {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--neon-1) 60%, transparent);
+      box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--neon-1) 35%, transparent);
+    }
+
+    /* Tiny sound visualizer bars */
+    @keyframes eqBar {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(1); }
+    }
+    .eq-playing .eq-bar-1 { animation: eqBar 0.7s ease-in-out infinite; }
+    .eq-playing .eq-bar-2 { animation: eqBar 0.55s ease-in-out 0.15s infinite; }
+    .eq-playing .eq-bar-3 { animation: eqBar 0.8s ease-in-out 0.3s infinite; }
+
+    /* Drawer Sheet Animation */
+    @keyframes sheetUp {
+      from { transform: translateY(24px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .sheet-panel {
+      animation: sheetUp 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="relative min-h-[100dvh] flex flex-col items-center justify-start px-3.5 py-4 sm:py-6">
+
+  <canvas id="bgCanvas"></canvas>
+  <div class="noise-overlay"></div>
+
+  <main class="relative z-10 w-full max-w-[460px] flex flex-col gap-4 pb-8">
+
+    <!-- Top Control Strip -->
+    <div class="flex items-center justify-between gap-2 px-0.5">
+      <div class="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 backdrop-blur-md">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="weatherBadge">Hải Phòng • Live</span>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button id="btnGyro" type="button" title="Bật cảm biến nghiêng 3D trên iPhone" class="h-7 px-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] font-semibold text-cyan-300 flex items-center gap-1 transition">
+          <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+          <span id="gyroLabel">3D Gyro</span>
+        </button>
+
+        <button id="btnSound" type="button" title="Bật / Tắt nhạc nền" class="h-7 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-fuchsia-300 flex items-center justify-center gap-0.5 transition">
+          <span class="eq-bar-1 w-0.5 h-3 bg-current rounded-full origin-bottom"></span>
+          <span class="eq-bar-2 w-0.5 h-3.5 bg-current rounded-full origin-bottom"></span>
+          <span class="eq-bar-3 w-0.5 h-2.5 bg-current rounded-full origin-bottom"></span>
+        </button>
+
+        <button id="btnTheme" type="button" title="Đổi tông Hologram Neon" class="h-7 w-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 flex items-center justify-center transition">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <button id="btnQR" type="button" title="Mã QR & Chia sẻ Bio" class="h-7 w-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 flex items-center justify-center transition">
+          <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3D Hologram Neon Profile Card (STATIC Avatar + 7-Color Animated Ring) -->
+    <section class="holo-stage">
+      <div id="holoCard" class="holo-card holo-border-glow rounded-[28px] p-5">
+        <div class="holo-foil"></div>
+        <div class="relative z-10 flex items-center gap-4">
+          <div id="avatarWrap" class="avatar-wrap">
+            <div class="avatar-spectrum-glow"></div>
+            <div class="avatar-spectrum-ring"></div>
+            <div class="avatar-static-photo">
+              <img src="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" alt="Shin Avatar" class="w-full h-full object-cover rounded-full" />
+            </div>
+            <span class="absolute -bottom-0.5 -right-0.5 z-10 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-[9px] font-black text-zinc-950 tracking-wider shadow">
+              DEV
+            </span>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-[10px] font-bold text-cyan-300 tracking-wide mb-1.5">
+              <span>HOLOCARD OS</span>
+              <span>•</span>
+              <span>0Đ ECOSYSTEM</span>
+            </div>
+            <h1 class="text-xl sm:text-[22px] font-extrabold tracking-tight text-white leading-tight truncate" style="font-family: 'Space Grotesk', sans-serif;">
+              Văn Trường - Dev Free
+            </h1>
+            <p class="text-[12.5px] text-zinc-300/90 mt-1 leading-snug">
+              Creator • WebGL, Locket Gold &amp; Tiện Ích 0đ
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PROMINENT HERO SECTION: SOCIAL MEDIA (MXH NỔI BẬT NHẤT) -->
+    <section class="flex flex-col gap-2.5">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-cyan-300 flex items-center gap-1.5">
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-fuchsia-400"></i>
+          Mạng Xã Hội Chính
+        </span>
+        <span class="text-[10px] font-semibold text-zinc-400">Follow để nhận tool mới</span>
+      </div>
+
+      <!-- TikTok Spotlight Card -->
+      <a href="https://www.tiktok.com/@v.truongg09127?_r=1&_t=ZS-9BeDirDOv0p" target="_blank" rel="noopener noreferrer"
+         class="social-hero-tiktok rounded-[24px] p-4 flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-12 h-12 rounded-2xl bg-black/70 border border-cyan-400/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(0,242,234,0.3)]">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+              <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" fill="url(#tkGrad)"/>
+              <defs>
+                <linearGradient id="tkGrad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#00F2EA"/>
+                  <stop offset="0.5" stop-color="#FFFFFF"/>
+                  <stop offset="1" stop-color="#FF0050"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[16px] font-extrabold text-white tracking-tight">TikTok</span>
+              <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-cyan-400 to-pink-500 text-[9px] font-black text-zinc-950 uppercase">HOT</span>
+            </div>
+            <div class="text-[12.5px] font-medium text-cyan-200/90 truncate">@v.truongg09127</div>
+          </div>
+        </div>
+        <div class="shrink-0 px-3.5 py-2 rounded-full bg-white text-zinc-950 text-[12px] font-extrabold flex items-center gap-1 shadow-md group-hover:scale-105 transition">
+          <span>Follow</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </div>
+      </a>
+
+      <!-- YouTube Spotlight Card -->
+      <a href="https://youtube.com/@truonghoang-om2cf?si=hMOM6BHrg2WQnozd" target="_blank" rel="noopener noreferrer"
+         class="social-hero-youtube rounded-[24px] p-4 flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-12 h-12 rounded-2xl bg-black/70 border border-rose-500/45 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,0,51,0.35)]">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" fill="#FF0033"/>
+              <path d="M9.75 15.02l5.75-3.27-5.75-3.27v6.54z" fill="#FFFFFF"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="text-[16px] font-extrabold text-white tracking-tight">YouTube</span>
+              <span class="px-1.5 py-0.5 rounded-md bg-rose-500/25 border border-rose-400/40 text-[9px] font-bold text-rose-200 uppercase">Video HD</span>
+            </div>
+            <div class="text-[12.5px] font-medium text-rose-200/90 truncate">@truonghoang-om2cf</div>
+          </div>
+        </div>
+        <div class="shrink-0 px-3.5 py-2 rounded-full bg-rose-500 text-white text-[12px] font-extrabold flex items-center gap-1 shadow-md group-hover:scale-105 transition">
+          <span>Subscribe</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </div>
+      </a>
+    </section>
+
+    <!-- 2. INSTANT IN-BIO TOOLS (DÙNG NGAY TRONG BIO) -->
+    <section class="flex flex-col gap-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-fuchsia-300 flex items-center gap-1.5">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i>
+          Tiện Ích Dùng Ngay
+        </span>
+        <span class="text-[10px] text-zinc-400">Mở trực tiếp tại chỗ</span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2">
+        <button id="openToolQR" type="button" class="instant-tool-btn rounded-2xl p-3 flex flex-col items-center text-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 flex items-center justify-center">
+            <i data-lucide="qr-code" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold text-white leading-tight">Tạo QR Link</div>
+            <div class="text-[10px] text-zinc-400 mt-0.5">Tùy màu &amp; Tải</div>
+          </div>
+        </button>
+
+        <button id="openToolBill" type="button" class="instant-tool-btn rounded-2xl p-3 flex flex-col items-center text-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center">
+            <i data-lucide="receipt" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold text-white leading-tight">Chia Bill QR</div>
+            <div class="text-[10px] text-zinc-400 mt-0.5">Gom số • VietQR</div>
+          </div>
+        </button>
+
+        <button id="openToolWheel" type="button" class="instant-tool-btn rounded-2xl p-3 flex flex-col items-center text-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-fuchsia-500/15 border border-fuchsia-400/35 text-fuchsia-300 flex items-center justify-center">
+            <i data-lucide="disc-3" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold text-white leading-tight">Vòng Quay</div>
+            <div class="text-[10px] text-zinc-400 mt-0.5">Thêm tên riêng</div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. EXISTING ECOSYSTEM APPS (HỆ SINH THÁI LOCKET & ẢNH) -->
+    <section class="flex flex-col gap-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-300 flex items-center gap-1.5">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+          Hệ Sinh Thái Locket &amp; Ảnh
+        </span>
+        <span class="text-[10px] text-zinc-500">4 web đang chạy</span>
+      </div>
+
+      <a href="https://tonelab-studio-vantruong.sipilike09.workers.dev" target="_blank" rel="noopener noreferrer"
+         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/35 text-sky-300 flex items-center justify-center shrink-0">
+            <i data-lucide="wand-sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[13.5px] font-bold text-white truncate">Web Chỉnh Ảnh ToneLab ULTRA</div>
+            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Chỉnh màu WebGL, Face AI, LUT &amp; Tách nền 0đ</p>
+          </div>
+        </div>
+        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+      </a>
+
+      <a href="https://upvideo.streamlit.app" target="_blank" rel="noopener noreferrer"
+         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-400/35 text-amber-300 flex items-center justify-center shrink-0">
+            <i data-lucide="camera" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[13.5px] font-bold text-white truncate">Up Video 60s, Photobooth &amp; Filter Locket</div>
+            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Locket Gold Studio • LED Audi, Đĩa Than, Rửa AI</p>
+          </div>
+        </div>
+        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+      </a>
+
+      <a href="https://dnslocket.streamlit.app" target="_blank" rel="noopener noreferrer"
+         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center shrink-0">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[13.5px] font-bold text-white truncate">DNS Giữ Locket Gold Vĩnh Viễn</div>
+            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Cấu hình DNS ổn định cho iPhone</p>
+          </div>
+        </div>
+        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+      </a>
+
+      <a href="https://captionlocket.netlify.app" target="_blank" rel="noopener noreferrer"
+         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-400/35 text-violet-300 flex items-center justify-center shrink-0">
+            <i data-lucide="message-circle" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[13.5px] font-bold text-white truncate">Tùy Chỉnh Caption Locket (Shadowrocket)</div>
+            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Module chỉnh màu &amp; icon caption Locket trên iOS</p>
+          </div>
+        </div>
+        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+      </a>
+    </section>
+
+    <!-- 4. PRO LABS MODULES (CÁC APP GPU / CAMERA NẶNG SẼ TRIỂN KHAI THEO ROUTE CON) -->
+    <section class="flex flex-col gap-2">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-400 flex items-center gap-1.5">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-fuchsia-400"></i>
+          Pro Labs (Đường Dẫn Con)
+        </span>
+        <span class="text-[10px] text-zinc-500">4 module chuyên sâu</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <a href="./sticker/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-pink-500/15 border border-pink-400/35 text-pink-300 flex items-center justify-center">
+              <i data-lucide="smile-plus" class="w-4 h-4"></i>
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/sticker</span>
+          </div>
+          <div class="text-[12.5px] font-bold text-white">StickerForge + Filter</div>
+          <div class="text-[10.5px] text-zinc-400 leading-snug">Filter AR TikTok &amp; đúc sticker động</div>
+        </a>
+
+        <a href="./fit/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 flex items-center justify-center">
+              <i data-lucide="shirt" class="w-4 h-4"></i>
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/fit</span>
+          </div>
+          <div class="text-[12.5px] font-bold text-white">FitMirror AR</div>
+          <div class="text-[10.5px] text-zinc-400 leading-snug">Ướm đồ, kính, tóc Shopee qua camera</div>
+        </a>
+
+        <a href="./earth/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-400/35 text-indigo-300 flex items-center justify-center">
+              <i data-lucide="globe" class="w-4 h-4"></i>
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/earth</span>
+          </div>
+          <div class="text-[12.5px] font-bold text-white">EarthZoom 3D</div>
+          <div class="text-[10.5px] text-zinc-400 leading-snug">Zoom từ vũ trụ xuống tọa độ ảnh GPS</div>
+        </a>
+
+        <a href="./down/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-400/35 text-amber-300 flex items-center justify-center">
+              <i data-lucide="download" class="w-4 h-4"></i>
+            </span>
+            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/down</span>
+          </div>
+          <div class="text-[12.5px] font-bold text-white">SocialRip &amp; Soi Video</div>
+          <div class="text-[10.5px] text-zinc-400 leading-snug">Tải không logo &amp; soi chỉ số TikTok/YT</div>
+        </a>
+      </div>
+    </section>
+
+    <footer class="text-center text-[11px] text-zinc-500 pt-1">
+      HoloCard OS • Văn Trường - Dev Free
+    </footer>
+  </main>
+
+  <!-- ==================== MODAL 1: QR LINK GENERATOR ==================== -->
+  <div id="modalQRTool" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-2.5 sm:p-4">
+    <div class="sheet-panel w-full max-w-[430px] max-h-[90dvh] overflow-y-auto no-scrollbar rounded-[26px] bg-[#0e101c] border border-cyan-400/35 p-4 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="qr-code" class="w-4 h-4 text-cyan-400"></i>
+          <span class="text-sm font-extrabold text-white">Tạo Mã QR Từ Link</span>
+        </div>
+        <button type="button" data-close="modalQRTool" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Dán đường link hoặc nội dung:</label>
+      <input id="qrInputText" type="text" value="https://www.tiktok.com/@v.truongg09127" placeholder="https://..." class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 mb-3" />
+
+      <div class="grid grid-cols-3 gap-1.5 mb-3">
+        <button type="button" data-qrcolor="#000000" class="qr-color-btn py-1.5 rounded-lg text-[11px] font-bold bg-white/10 border border-cyan-400 text-white">Đen chuẩn</button>
+        <button type="button" data-qrcolor="#0284c7" class="qr-color-btn py-1.5 rounded-lg text-[11px] font-bold bg-white/5 border border-white/10 text-cyan-300">Xanh Cyan</button>
+        <button type="button" data-qrcolor="#a21caf" class="qr-color-btn py-1.5 rounded-lg text-[11px] font-bold bg-white/5 border border-white/10 text-fuchsia-300">Tím Neon</button>
+      </div>
+
+      <div class="flex flex-col items-center bg-white rounded-2xl p-3 mb-3">
+        <canvas id="qrToolCanvas" width="240" height="240" class="w-52 h-52"></canvas>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btnCopyQRInput" type="button" class="py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold text-white">Copy Link</button>
+        <button id="btnDownloadQR" type="button" class="py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-xs font-extrabold text-zinc-950">Tải Ảnh QR (.png)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: CHIA BILL & VIETQR ==================== -->
+  <div id="modalBillTool" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-2.5 sm:p-4">
+    <div class="sheet-panel w-full max-w-[430px] max-h-[90dvh] overflow-y-auto no-scrollbar rounded-[26px] bg-[#0e101c] border border-emerald-400/35 p-4 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+          <span class="text-sm font-extrabold text-white">Chia Bill &amp; Hiện Mã VietQR</span>
+        </div>
+        <button type="button" data-close="modalBillTool" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Optional Bill Photo Preview -->
+      <div class="mb-2.5">
+        <label for="billPhotoInput" class="w-full py-2 px-3 rounded-xl bg-emerald-500/10 border border-dashed border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer">
+          <i data-lucide="camera" class="w-4 h-4"></i>
+          <span>Chụp / Chọn ảnh Bill hoặc Ghi chú để đối chiếu</span>
+        </label>
+        <input id="billPhotoInput" type="file" accept="image/*" class="hidden" />
+        <img id="billPhotoPreview" alt="Ảnh bill" class="hidden mt-2 w-full max-h-40 object-contain rounded-xl border border-white/10 bg-black/50" />
+      </div>
+
+      <label class="block text-[11px] font-semibold text-zinc-400 mb-1">Ghi chú các khoản chi (tự động gom số như 45k, 120.000, 1.5tr):</label>
+      <textarea id="billNotesInput" rows="3" placeholder="VD:&#10;Nướng 450k&#10;Trà sữa 125k&#10;Gửi xe 20000" class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400 mb-2.5">Lẩu nướng 480k
+Trà chanh 90k
+Gửi xe 30k</textarea>
+
+      <div class="grid grid-cols-2 gap-2 mb-2.5">
+        <div>
+          <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Số người chia:</label>
+          <input id="billPeopleCount" type="number" min="1" max="50" value="4" class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs font-bold text-white" />
+        </div>
+        <div class="rounded-xl bg-emerald-500/15 border border-emerald-400/30 px-3 py-1.5 flex flex-col justify-center">
+          <span class="text-[10px] text-emerald-200">Mỗi người trả:</span>
+          <span id="billPerPersonText" class="text-sm font-black text-emerald-300">150.000đ</span>
+        </div>
+      </div>
+
+      <div id="billBreakdown" class="text-[11px] text-zinc-400 mb-3 bg-white/5 rounded-xl px-3 py-2"></div>
+
+      <!-- Bank Info for VietQR -->
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <div>
+          <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Ngân hàng nhận:</label>
+          <select id="vietqrBank" class="w-full rounded-xl bg-black/70 border border-white/15 px-2.5 py-2 text-xs text-white">
+            <option value="MB">MBBank</option>
+            <option value="VCB">Vietcombank</option>
+            <option value="TCB">Techcombank</option>
+            <option value="BIDV">BIDV</option>
+            <option value="ICB">VietinBank</option>
+            <option value="ACB">ACB</option>
+            <option value="TPB">TPBank</option>
+            <option value="VPB">VPBank</option>
+            <option value="STB">Sacombank</option>
+            <option value="VIB">VIB</option>
+            <option value="VBA">Agribank</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Số tài khoản:</label>
+          <input id="vietqrAcc" type="text" placeholder="Nhập STK..." class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <input id="vietqrName" type="text" placeholder="Tên chủ TK (không dấu)" class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white" />
+        <input id="vietqrMemo" type="text" value="Chia tien bill" placeholder="Nội dung CK" class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white" />
+      </div>
+
+      <button id="btnGenVietQR" type="button" class="w-full py-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 text-zinc-950 text-xs font-extrabold mb-3">
+        Tạo Mã VietQR Chia Tiền Ngay
+      </button>
+
+      <div id="vietqrResultBox" class="hidden flex-col items-center bg-white rounded-2xl p-3 text-center">
+        <img id="vietqrImg" alt="VietQR" class="w-56 h-auto rounded-xl" />
+        <p id="vietqrCaption" class="text-[11px] font-bold text-zinc-800 mt-1.5"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: VÒNG QUAY MAY MẮN ==================== -->
+  <div id="modalWheelTool" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-2.5 sm:p-4">
+    <div class="sheet-panel w-full max-w-[430px] max-h-[90dvh] overflow-y-auto no-scrollbar rounded-[26px] bg-[#0e101c] border border-fuchsia-400/35 p-4 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="disc-3" class="w-4 h-4 text-fuchsia-400"></i>
+          <span class="text-sm font-extrabold text-white">Vòng Quay May Mắn</span>
+        </div>
+        <button type="button" data-close="modalWheelTool" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="relative flex flex-col items-center justify-center mb-3">
+        <div class="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[16px] border-t-amber-400 z-10 -mb-2 drop-shadow"></div>
+        <canvas id="wheelCanvas" width="270" height="270" class="w-[245px] h-[245px] rounded-full shadow-[0_0_30px_rgba(255,0,229,0.28)]"></canvas>
+      </div>
+
+      <div id="wheelResultBanner" class="hidden mb-2.5 rounded-xl bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 border border-fuchsia-400/40 px-3 py-2 text-center">
+        <div class="text-[10px] text-zinc-300 uppercase tracking-wider">Kết quả quay trúng</div>
+        <div id="wheelWinnerText" class="text-base font-black text-amber-300 mt-0.5"></div>
+      </div>
+
+      <div class="flex gap-2 mb-3">
+        <button id="btnSpinWheel" type="button" class="flex-1 py-2.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 text-zinc-950 text-xs font-extrabold">
+          QUAY NGAY
+        </button>
+        <button id="btnRemoveWinner" type="button" class="hidden px-3.5 py-2.5 rounded-full bg-white/10 text-xs font-bold text-rose-300">
+          Xóa tên này
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between mb-1">
+        <label class="text-[11px] font-semibold text-zinc-400">Danh sách tên / lựa chọn (mỗi dòng 1 mục):</label>
+        <button id="btnWheelPresetFood" type="button" class="text-[10px] font-bold text-cyan-300">Mẫu ăn gì</button>
+      </div>
+      <textarea id="wheelNamesInput" rows="4" class="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white focus:outline-none focus:border-fuchsia-400">Trường
+Minh
+Linh
+Huy
+Trang
+Khánh</textarea>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 4: PRO LABS ROUTE INFO ==================== -->
+  <div id="modalLabInfo" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="sheet-panel w-full max-w-[360px] rounded-[26px] bg-[#0e101c] border border-cyan-400/35 p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-2">
+        <span id="labInfoTitle" class="text-sm font-extrabold text-white"></span>
+        <button type="button" data-close="modalLabInfo" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p id="labInfoDesc" class="text-xs text-zinc-300 leading-relaxed mb-3"></p>
+      <div class="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-[11px] text-cyan-300 font-mono mb-3" id="labInfoRoute"></div>
+      <button type="button" data-close="modalLabInfo" class="w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold text-white">Đóng</button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 5: SHARE BIO QR ==================== -->
+  <div id="qrModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="sheet-panel w-full max-w-[340px] rounded-[26px] bg-[#0e101c] border border-cyan-400/30 p-5 text-center shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-bold text-white">Chia sẻ Bio HoloCard</span>
+        <button id="btnCloseQR" type="button" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="qrBox" class="mx-auto w-44 h-44 bg-white rounded-2xl p-2.5 flex items-center justify-center mb-3"></div>
+      <p class="text-[11.5px] text-zinc-400 mb-3">Quét mã QR hoặc sao chép liên kết trang Bio này</p>
+      <button id="btnCopyLink" type="button" class="w-full py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-zinc-950 text-xs font-extrabold">
+        Sao chép Link Bio
+      </button>
+    </div>
+  </div>
+
+  <!-- In-page Toast -->
+  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-full bg-zinc-900/95 border border-cyan-400/40 text-xs font-semibold text-cyan-200 shadow-lg"></div>
+
+  <script>
+    lucide.createIcons();
+
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.add("hidden"), 2400);
+    }
+
+    function copyTextSafe(text, successMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast(successMsg)).catch(() => fallbackCopy(text, successMsg));
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+    function fallbackCopy(text, successMsg) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      ta.remove();
+      showToast(successMsg);
+    }
+
+    // Generic modal close wiring
+    document.querySelectorAll("[data-close]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = document.getElementById(btn.getAttribute("data-close"));
+        if (target) target.classList.add("hidden");
+      });
+    });
+    ["modalQRTool", "modalBillTool", "modalWheelTool", "modalLabInfo"].forEach((id) => {
+      const el = document.getElementById(id);
+      el.addEventListener("click", (e) => {
+        if (e.target === el) el.classList.add("hidden");
+      });
+    });
+
+    // 1. Hologram Neon Theme Switcher
+    const THEMES = [
+      { name: "Cyber Neon", n1: "#00f5ff", n2: "#ff00e5", n3: "#7c3aed" },
+      { name: "Electric Violet", n1: "#a855f7", n2: "#38bdf8", n3: "#ec4899" },
+      { name: "Aurora Matrix", n1: "#34d399", n2: "#22d3ee", n3: "#818cf8" },
+    ];
+    let themeIdx = 0;
+    try {
+      const saved = parseInt(localStorage.getItem("holo_theme_idx") || "0", 10);
+      if (!Number.isNaN(saved) && saved >= 0 && saved < THEMES.length) themeIdx = saved;
+    } catch (e) {}
+
+    function applyTheme(idx) {
+      const t = THEMES[idx];
+      document.documentElement.style.setProperty("--neon-1", t.n1);
+      document.documentElement.style.setProperty("--neon-2", t.n2);
+      document.documentElement.style.setProperty("--neon-3", t.n3);
+      try { localStorage.setItem("holo_theme_idx", String(idx)); } catch (e) {}
+    }
+    applyTheme(themeIdx);
+
+    document.getElementById("btnTheme").addEventListener("click", () => {
+      themeIdx = (themeIdx + 1) % THEMES.length;
+      applyTheme(themeIdx);
+      showToast("Tông màu: " + THEMES[themeIdx].name);
+    });
+
+    // 2. 3D Hologram Card Tilt (Pointer + iPhone Gyroscope)
+    const holoCard = document.getElementById("holoCard");
+    const rootStyle = document.documentElement.style;
+    let gyroEnabled = false;
+
+    function setTilt(rxDeg, ryDeg, mxPct, myPct, angleDeg) {
+      rootStyle.setProperty("--rx", rxDeg.toFixed(2) + "deg");
+      rootStyle.setProperty("--ry", ryDeg.toFixed(2) + "deg");
+      rootStyle.setProperty("--mx", mxPct.toFixed(1) + "%");
+      rootStyle.setProperty("--my", myPct.toFixed(1) + "%");
+      rootStyle.setProperty("--holo-angle", angleDeg.toFixed(1) + "deg");
+    }
+
+    holoCard.addEventListener("pointermove", (e) => {
+      if (gyroEnabled) return;
+      const r = holoCard.getBoundingClientRect();
+      const px = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      const py = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+      setTilt((0.5 - py) * 14, (px - 0.5) * 16, px * 100, py * 100, 100 + px * 160);
+    });
+
+    holoCard.addEventListener("pointerleave", () => {
+      if (!gyroEnabled) setTilt(0, 0, 50, 50, 125);
+    });
+
+    function handleOrientation(e) {
+      if (e.gamma == null || e.beta == null) return;
+      const gamma = Math.max(-35, Math.min(35, e.gamma));
+      const beta = Math.max(-35, Math.min(35, e.beta - 35));
+      setTilt(-(beta / 35) * 11, (gamma / 35) * 13, 50 + (gamma / 35) * 42, 50 + (beta / 35) * 42, 125 + gamma * 2.2);
+    }
+
+    document.getElementById("btnGyro").addEventListener("click", async () => {
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm === "granted") {
+            window.addEventListener("deviceorientation", handleOrientation);
+            gyroEnabled = true;
+            document.getElementById("gyroLabel").textContent = "Gyro ON";
+            showToast("Đã bật cảm biến nghiêng 3D");
+          } else {
+            showToast("Chưa cấp quyền cảm biến nghiêng");
+          }
+        } catch (err) {
+          showToast("Không bật được cảm biến nghiêng");
+        }
+      } else if ("ondeviceorientation" in window) {
+        window.addEventListener("deviceorientation", handleOrientation);
+        gyroEnabled = true;
+        document.getElementById("gyroLabel").textContent = "Gyro ON";
+        showToast("Đã bật cảm biến nghiêng 3D");
+      } else {
+        showToast("Thiết bị không hỗ trợ cảm biến nghiêng");
+      }
+    });
+
+    // 3. Animated Neon Mesh Background
+    const bgCanvas = document.getElementById("bgCanvas");
+    const bgCtx = bgCanvas.getContext("2d");
+    const orbs = [
+      { x: 0.2, y: 0.2, r: 220, vx: 0.0005, vy: 0.0004, c: "rgba(0, 245, 255, 0.16)" },
+      { x: 0.8, y: 0.35, r: 240, vx: -0.0004, vy: 0.0005, c: "rgba(255, 0, 229, 0.14)" },
+      { x: 0.5, y: 0.8, r: 260, vx: 0.0003, vy: -0.0004, c: "rgba(124, 58, 237, 0.16)" },
+    ];
+    function resizeBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeBg);
+    resizeBg();
+
+    let bgAnimId = null;
+    function drawBg() {
+      const w = bgCanvas.width, h = bgCanvas.height;
+      bgCtx.clearRect(0, 0, w, h);
+      for (const o of orbs) {
+        o.x += o.vx;
+        o.y += o.vy;
+        if (o.x < 0.05 || o.x > 0.95) o.vx *= -1;
+        if (o.y < 0.05 || o.y > 0.95) o.vy *= -1;
+        const gx = o.x * w, gy = o.y * h;
+        const grad = bgCtx.createRadialGradient(gx, gy, 0, gx, gy, o.r);
+        grad.addColorStop(0, o.c);
+        grad.addColorStop(1, "transparent");
+        bgCtx.fillStyle = grad;
+        bgCtx.fillRect(0, 0, w, h);
+      }
+      bgAnimId = requestAnimationFrame(drawBg);
+    }
+    if (bgAnimId) cancelAnimationFrame(bgAnimId);
+    drawBg();
+
+    // 4. Direct Background Music ("Shape of You" — no <audio> tag, unaffected by ring animations)
+    let bgAudio = null;
+    let musicReady = false;
+    let isPlaying = false;
+    const btnSound = document.getElementById("btnSound");
+    const avatarWrap = document.getElementById("avatarWrap");
+
+    async function initShapeOfYou() {
+      if (musicReady) return;
+      try {
+        const res = await fetch("https://itunes.apple.com/search?term=Shape+of+You+Ed+Sheeran&entity=song&limit=1");
+        const data = await res.json();
+        const previewUrl = data && data.results && data.results[0] && data.results[0].previewUrl;
+        if (previewUrl) {
+          bgAudio = new Audio(previewUrl);
+          bgAudio.loop = true;
+          bgAudio.volume = 0.55;
+          musicReady = true;
+        }
+      } catch (e) {}
+    }
+    initShapeOfYou();
+
+    async function toggleMusic(forcePlay) {
+      if (!bgAudio) await initShapeOfYou();
+      if (!bgAudio) return;
+      try {
+        if (forcePlay === true || bgAudio.paused) {
+          await bgAudio.play();
+          isPlaying = true;
+          btnSound.classList.add("eq-playing");
+          avatarWrap.classList.add("is-playing");
+        } else {
+          bgAudio.pause();
+          isPlaying = false;
+          btnSound.classList.remove("eq-playing");
+          avatarWrap.classList.remove("is-playing");
+        }
+      } catch (e) {}
+    }
+
+    btnSound.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMusic();
+    });
+
+    function firstTapPlay() {
+      if (!isPlaying) toggleMusic(true);
+      window.removeEventListener("pointerdown", firstTapPlay);
+    }
+    window.addEventListener("pointerdown", firstTapPlay, { once: true });
+
+    // 5. Live Hai Phong Weather
+    (async function loadWeather() {
+      try {
+        const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=20.8449&longitude=106.6881&current_weather=true");
+        const d = await r.json();
+        if (d && d.current_weather && typeof d.current_weather.temperature === "number") {
+          document.getElementById("weatherBadge").textContent = "Hải Phòng • " + Math.round(d.current_weather.temperature) + "°C";
+        }
+      } catch (e) {}
+    })();
+
+    // 6. Bio Share QR Modal
+    const qrModal = document.getElementById("qrModal");
+    const qrBox = document.getElementById("qrBox");
+    document.getElementById("btnQR").addEventListener("click", () => {
+      const targetUrl = window.location.href;
+      if (typeof qrcode === "function") {
+        const qr = qrcode(0, "M");
+        qr.addData(targetUrl);
+        qr.make();
+        qrBox.innerHTML = qr.createSvgTag({ scalable: true });
+      }
+      qrModal.classList.remove("hidden");
+    });
+    document.getElementById("btnCloseQR").addEventListener("click", () => qrModal.classList.add("hidden"));
+    qrModal.addEventListener("click", (e) => {
+      if (e.target === qrModal) qrModal.classList.add("hidden");
+    });
+    document.getElementById("btnCopyLink").addEventListener("click", () => copyTextSafe(window.location.href, "Đã sao chép link Bio!"));
+
+    // ==================== TOOL 1: QR LINK GENERATOR ====================
+    const modalQRTool = document.getElementById("modalQRTool");
+    const qrInputText = document.getElementById("qrInputText");
+    const qrToolCanvas = document.getElementById("qrToolCanvas");
+    let qrFgColor = "#000000";
+
+    function renderQRTool() {
+      const val = (qrInputText.value || "https://www.tiktok.com/@v.truongg09127").trim();
+      if (typeof qrcode !== "function") return;
+      const qr = qrcode(0, "M");
+      qr.addData(val);
+      qr.make();
+      const count = qr.getModuleCount();
+      const size = qrToolCanvas.width;
+      const pad = 16;
+      const cell = (size - pad * 2) / count;
+      const ctx = qrToolCanvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = qrFgColor;
+      for (let r = 0; r < count; r++) {
+        for (let c = 0; c < count; c++) {
+          if (qr.isDark(r, c)) {
+            ctx.fillRect(pad + c * cell, pad + r * cell, Math.ceil(cell), Math.ceil(cell));
+          }
+        }
+      }
+    }
+
+    document.getElementById("openToolQR").addEventListener("click", () => {
+      modalQRTool.classList.remove("hidden");
+      renderQRTool();
+    });
+    qrInputText.addEventListener("input", renderQRTool);
+    document.querySelectorAll(".qr-color-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        qrFgColor = btn.getAttribute("data-qrcolor") || "#000000";
+        document.querySelectorAll(".qr-color-btn").forEach((b) => b.classList.remove("border-cyan-400", "bg-white/10"));
+        btn.classList.add("border-cyan-400", "bg-white/10");
+        renderQRTool();
+      });
+    });
+    document.getElementById("btnCopyQRInput").addEventListener("click", () => copyTextSafe(qrInputText.value.trim(), "Đã sao chép nội dung!"));
+    document.getElementById("btnDownloadQR").addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.download = "holocard-qr.png";
+      a.href = qrToolCanvas.toDataURL("image/png");
+      a.click();
+      showToast("Đã tải ảnh mã QR!");
+    });
+
+    // ==================== TOOL 2: BILL SPLIT & VIETQR ====================
+    const modalBillTool = document.getElementById("modalBillTool");
+    const billNotesInput = document.getElementById("billNotesInput");
+    const billPeopleCount = document.getElementById("billPeopleCount");
+    const billPerPersonText = document.getElementById("billPerPersonText");
+    const billBreakdown = document.getElementById("billBreakdown");
+    const vietqrBank = document.getElementById("vietqrBank");
+    const vietqrAcc = document.getElementById("vietqrAcc");
+    const vietqrName = document.getElementById("vietqrName");
+    const vietqrMemo = document.getElementById("vietqrMemo");
+    const vietqrResultBox = document.getElementById("vietqrResultBox");
+    const vietqrImg = document.getElementById("vietqrImg");
+    const vietqrCaption = document.getElementById("vietqrCaption");
+
+    // Restore saved bank info
+    try {
+      const savedBank = JSON.parse(localStorage.getItem("holo_vietqr_bank") || "null");
+      if (savedBank) {
+        if (savedBank.bank) vietqrBank.value = savedBank.bank;
+        if (savedBank.acc) vietqrAcc.value = savedBank.acc;
+        if (savedBank.name) vietqrName.value = savedBank.name;
+      }
+    } catch (e) {}
+
+    let computedPerPerson = 0;
+    function parseBillAmounts(rawText) {
+      const lines = rawText.split(/\n|;|,/).map((s) => s.trim()).filter(Boolean);
+      const amounts = [];
+      const regex = /(\d+(?:[.,]\d+)?)\s*(tr|triệu|trieu|m|k|nghìn|nghin|đ|d|vnd)?/gi;
+      for (const line of lines) {
+        let m;
+        while ((m = regex.exec(line)) !== null) {
+          let numStr = m[1];
+          const unit = (m[2] || "").toLowerCase();
+          let val = 0;
+          if (unit === "tr" || unit === "triệu" || unit === "trieu" || unit === "m") {
+            val = parseFloat(numStr.replace(",", ".")) * 1000000;
+          } else if (unit === "k" || unit === "nghìn" || unit === "nghin") {
+            val = parseFloat(numStr.replace(",", ".")) * 1000;
+          } else {
+            const cleaned = numStr.replace(/[.,]/g, "");
+            val = parseInt(cleaned, 10);
+            if (val > 0 && val < 1000 && !unit) continue;
+          }
+          if (!Number.isNaN(val) && val > 0) amounts.push(Math.round(val));
+        }
+      }
+      return amounts;
+    }
+
+    function recalcBill() {
+      const items = parseBillAmounts(billNotesInput.value);
+      const total = items.reduce((a, b) => a + b, 0);
+      const people = Math.max(1, parseInt(billPeopleCount.value || "1", 10) || 1);
+      computedPerPerson = Math.ceil(total / people);
+      billPerPersonText.textContent = computedPerPerson.toLocaleString("vi-VN") + "đ";
+      billBreakdown.textContent = "Đã gom " + items.length + " khoản • Tổng: " + total.toLocaleString("vi-VN") + "đ ÷ " + people + " người";
+    }
+
+    document.getElementById("openToolBill").addEventListener("click", () => {
+      modalBillTool.classList.remove("hidden");
+      recalcBill();
+    });
+    billNotesInput.addEventListener("input", recalcBill);
+    billPeopleCount.addEventListener("input", recalcBill);
+
+    document.getElementById("billPhotoInput").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const preview = document.getElementById("billPhotoPreview");
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove("hidden");
+      showToast("Đã tải ảnh bill để đối chiếu số tiền");
+    });
+
+    document.getElementById("btnGenVietQR").addEventListener("click", () => {
+      recalcBill();
+      const acc = vietqrAcc.value.trim();
+      if (!acc) {
+        showToast("Nhập số tài khoản nhận tiền trước nhé!");
+        return;
+      }
+      const bank = vietqrBank.value;
+      const name = vietqrName.value.trim();
+      const memo = vietqrMemo.value.trim() || "Chia tien bill";
+      try {
+        localStorage.setItem("holo_vietqr_bank", JSON.stringify({ bank, acc, name }));
+      } catch (e) {}
+
+      const qrUrl =
+        "https://img.vietqr.io/image/" +
+        encodeURIComponent(bank) + "-" + encodeURIComponent(acc) + "-compact2.png" +
+        "?amount=" + encodeURIComponent(String(computedPerPerson)) +
+        "&addInfo=" + encodeURIComponent(memo) +
+        (name ? "&accountName=" + encodeURIComponent(name) : "");
+
+      vietqrImg.src = qrUrl;
+      vietqrCaption.textContent = bank + " • " + acc + " • " + computedPerPerson.toLocaleString("vi-VN") + "đ";
+      vietqrResultBox.classList.remove("hidden");
+      vietqrResultBox.classList.add("flex");
+      showToast("Đã tạo mã VietQR chuẩn Napas!");
+    });
+
+    // ==================== TOOL 3: LUCKY WHEEL ====================
+    const modalWheelTool = document.getElementById("modalWheelTool");
+    const wheelCanvas = document.getElementById("wheelCanvas");
+    const wheelCtx = wheelCanvas.getContext("2d");
+    const wheelNamesInput = document.getElementById("wheelNamesInput");
+    const wheelResultBanner = document.getElementById("wheelResultBanner");
+    const wheelWinnerText = document.getElementById("wheelWinnerText");
+    const btnRemoveWinner = document.getElementById("btnRemoveWinner");
+
+    const WHEEL_PALETTE = ["#00d4ff", "#ff00a8", "#7c3aed", "#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#ec4899"];
+    let wheelAngle = 0;
+    let wheelSpinning = false;
+    let lastWinnerIndex = -1;
+    let wheelRaf = null;
+
+    function getWheelItems() {
+      const arr = wheelNamesInput.value.split("\n").map((s) => s.trim()).filter(Boolean);
+      return arr.length ? arr : ["Mục 1", "Mục 2"];
+    }
+
+    function drawWheel() {
+      const items = getWheelItems();
+      const n = items.length;
+      const w = wheelCanvas.width, h = wheelCanvas.height;
+      const cx = w / 2, cy = h / 2, r = w / 2 - 6;
+      const arc = (Math.PI * 2) / n;
+
+      wheelCtx.clearRect(0, 0, w, h);
+      for (let i = 0; i < n; i++) {
+        const start = wheelAngle + i * arc;
+        const end = start + arc;
+        wheelCtx.beginPath();
+        wheelCtx.moveTo(cx, cy);
+        wheelCtx.arc(cx, cy, r, start, end);
+        wheelCtx.closePath();
+        wheelCtx.fillStyle = WHEEL_PALETTE[i % WHEEL_PALETTE.length];
+        wheelCtx.fill();
+        wheelCtx.lineWidth = 2;
+        wheelCtx.strokeStyle = "#090910";
+        wheelCtx.stroke();
+
+        wheelCtx.save();
+        wheelCtx.translate(cx, cy);
+        wheelCtx.rotate(start + arc / 2);
+        wheelCtx.textAlign = "right";
+        wheelCtx.fillStyle = "#ffffff";
+        wheelCtx.font = "bold 13px Inter, sans-serif";
+        const label = items[i].length > 13 ? items[i].slice(0, 12) + "…" : items[i];
+        wheelCtx.fillText(label, r - 14, 5);
+        wheelCtx.restore();
+      }
+
+      wheelCtx.beginPath();
+      wheelCtx.arc(cx, cy, 18, 0, Math.PI * 2);
+      wheelCtx.fillStyle = "#090910";
+      wheelCtx.fill();
+      wheelCtx.lineWidth = 3;
+      wheelCtx.strokeStyle = "#ffffff";
+      wheelCtx.stroke();
+    }
+
+    document.getElementById("openToolWheel").addEventListener("click", () => {
+      modalWheelTool.classList.remove("hidden");
+      drawWheel();
+    });
+    wheelNamesInput.addEventListener("input", () => {
+      if (!wheelSpinning) drawWheel();
+    });
+    document.getElementById("btnWheelPresetFood").addEventListener("click", () => {
+      if (wheelSpinning) return;
+      wheelNamesInput.value = "Bún đậu\nLẩu nướng\nBánh đa cua\nTrà sữa\nGà rán\nBún bò";
+      drawWheel();
+    });
+
+    document.getElementById("btnSpinWheel").addEventListener("click", () => {
+      if (wheelSpinning) return;
+      const items = getWheelItems();
+      if (items.length < 2) {
+        showToast("Nhập ít nhất 2 mục để quay!");
+        return;
+      }
+      wheelSpinning = true;
+      wheelResultBanner.classList.add("hidden");
+      btnRemoveWinner.classList.add("hidden");
+
+      const startAngle = wheelAngle;
+      const extraSpins = Math.PI * 2 * (5 + Math.random() * 4);
+      const duration = 3600;
+      const startTime = performance.now();
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        wheelAngle = startAngle + extraSpins * eased;
+        drawWheel();
+        if (t < 1) {
+          wheelRaf = requestAnimationFrame(animate);
+        } else {
+          wheelSpinning = false;
+          const n = items.length;
+          const arc = (Math.PI * 2) / n;
+          const pointerAngle = (Math.PI * 1.5 - (wheelAngle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2);
+          lastWinnerIndex = Math.floor(pointerAngle / arc) % n;
+          wheelWinnerText.textContent = items[lastWinnerIndex];
+          wheelResultBanner.classList.remove("hidden");
+          if (items.length > 2) btnRemoveWinner.classList.remove("hidden");
+        }
+      }
+      if (wheelRaf) cancelAnimationFrame(wheelRaf);
+      wheelRaf = requestAnimationFrame(animate);
+    });
+
+    btnRemoveWinner.addEventListener("click", () => {
+      if (lastWinnerIndex < 0 || wheelSpinning) return;
+      const items = getWheelItems();
+      items.splice(lastWinnerIndex, 1);
+      wheelNamesInput.value = items.join("\n");
+      lastWinnerIndex = -1;
+      btnRemoveWinner.classList.add("hidden");
+      wheelResultBanner.classList.add("hidden");
+      drawWheel();
+    });
+
+    // ==================== PRO LABS SUB-ROUTE SHEET ====================
+    const LAB_DETAILS = {
+      sticker: {
+        title: "StickerForge + Filter TikTok AR",
+        desc: "Chạy độc lập để tối ưu RAM Safari cho MediaPipe 468 điểm mặt & WebGL2: gắn filter phụ kiện AR bám mặt 60fps và đúc bộ sticker động nền trong suốt gửi Messenger/Zalo.",
+        route: "Đường dẫn đề xuất: /sticker/index.html"
+      },
+      fit: {
+        title: "FitMirror AR — Ướm Đồ Shopee",
+        desc: "Tách nền ảnh quần áo, kính, kiểu tóc từ Shopee/TikTok Shop và ướm trực tiếp qua camera MediaPipe Pose/Face kèm đo tông da.",
+        route: "Đường dẫn đề xuất: /fit/index.html"
+      },
+      earth: {
+        title: "EarthZoom 3D — Bay Từ Vũ Trụ",
+        desc: "Đọc tọa độ GPS (EXIF) từ ảnh chụp trong máy để dựng video 3D zoom từ ngoài Trái Đất lao xuống đúng địa điểm check-in.",
+        route: "Đường dẫn đề xuất: /earth/index.html"
+      },
+      down: {
+        title: "SocialRip — Tải & Soi Chỉ Số Video MXH",
+        desc: "Dán link TikTok / YouTube để tải video không logo, lấy nhạc gốc và xem chỉ số view, tim, bình luận qua Cloudflare Worker.",
+        route: "Đường dẫn đề xuất: /down/index.html"
+      }
+    };
+    const modalLabInfo = document.getElementById("modalLabInfo");
+    document.querySelectorAll(".lab-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const key = card.getAttribute("data-lab");
+        const info = LAB_DETAILS[key];
+        if (!info) return;
+        document.getElementById("labInfoTitle").textContent = info.title;
+        document.getElementById("labInfoDesc").textContent = info.desc;
+        document.getElementById("labInfoRoute").textContent = info.route;
+        modalLabInfo.classList.remove("hidden");
+      });
+    });
+  </script>
+</body>
+</html>
