@@ -25,6 +25,9 @@
       --rx: 0deg;
       --ry: 0deg;
       --holo-angle: 125deg;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --spring: cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     * {
@@ -40,6 +43,7 @@
       color: #f8fafc;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     #bgCanvas {
@@ -56,30 +60,27 @@
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      opacity: 0.04;
+      opacity: 0.035;
       background-image: radial-gradient(rgba(255,255,255,0.6) 1px, transparent 0);
       background-size: 22px 22px;
     }
 
     /* 3D Hologram Card */
-    .holo-stage {
-      perspective: 1200px;
-    }
+    .holo-stage { perspective: 1100px; }
 
     .holo-card {
       position: relative;
       transform-style: preserve-3d;
       transform: rotateX(var(--rx)) rotateY(var(--ry));
-      transition: transform 0.14s cubic-bezier(0.22, 1, 0.36, 1);
-      background: linear-gradient(145deg, rgba(16, 18, 32, 0.90), rgba(8, 9, 18, 0.95));
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      transition: transform 0.14s var(--spring);
+      background: linear-gradient(145deg, rgba(16, 18, 32, 0.92), rgba(8, 9, 18, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.13);
       box-shadow:
-        0 20px 55px rgba(0, 0, 0, 0.78),
-        0 0 36px -8px color-mix(in srgb, var(--neon-1) 45%, transparent),
-        0 0 42px -10px color-mix(in srgb, var(--neon-2) 38%, transparent);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
+        0 18px 46px rgba(0, 0, 0, 0.78),
+        0 0 32px -10px color-mix(in srgb, var(--neon-1) 42%, transparent),
+        0 0 36px -12px color-mix(in srgb, var(--neon-2) 34%, transparent);
       overflow: hidden;
+      will-change: transform;
     }
 
     .holo-foil {
@@ -88,13 +89,13 @@
       pointer-events: none;
       border-radius: inherit;
       background:
-        radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.03) 34%, transparent 64%),
+        radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.03) 34%, transparent 64%),
         linear-gradient(
           var(--holo-angle),
           transparent 15%,
-          color-mix(in srgb, var(--neon-1) 24%, transparent) 34%,
-          color-mix(in srgb, var(--neon-2) 24%, transparent) 50%,
-          color-mix(in srgb, var(--neon-3) 26%, transparent) 66%,
+          color-mix(in srgb, var(--neon-1) 22%, transparent) 34%,
+          color-mix(in srgb, var(--neon-2) 22%, transparent) 50%,
+          color-mix(in srgb, var(--neon-3) 24%, transparent) 66%,
           transparent 85%
         );
       mix-blend-mode: screen;
@@ -102,10 +103,7 @@
       z-index: 1;
     }
 
-    .holo-border-glow {
-      position: relative;
-    }
-
+    .holo-border-glow { position: relative; }
     .holo-border-glow::before {
       content: "";
       position: absolute;
@@ -117,65 +115,40 @@
       -webkit-mask-composite: xor;
       mask-composite: exclude;
       pointer-events: none;
-      opacity: 0.85;
+      opacity: 0.82;
     }
 
-    /* STATIC Avatar + Independent 7-Color Spectrum Ring (Never rotates the photo) */
-    @keyframes ringRotate {
-      to { transform: rotate(360deg); }
-    }
+    /* Static Avatar + 7-Color Spectrum Ring */
+    @keyframes ringRotate { to { transform: rotate(360deg); } }
     @keyframes ringBeatGlow {
-      0%, 100% { transform: scale(1); opacity: 0.72; }
-      50% { transform: scale(1.07); opacity: 1; }
+      0%, 100% { transform: scale(1); opacity: 0.68; }
+      50% { transform: scale(1.06); opacity: 0.98; }
     }
 
     .avatar-wrap {
       position: relative;
-      width: 82px;
-      height: 82px;
+      width: 72px;
+      height: 72px;
       flex-shrink: 0;
     }
-
     .avatar-spectrum-glow {
       position: absolute;
       inset: -4px;
       border-radius: 9999px;
-      background: conic-gradient(
-        from 0deg,
-        #ff2a5f,
-        #ff8a00,
-        #ffe600,
-        #00f59b,
-        #00d4ff,
-        #7c3aed,
-        #ff00e5,
-        #ff2a5f
-      );
-      filter: blur(8px);
-      opacity: 0.65;
-      animation: ringRotate 4.5s linear infinite, ringBeatGlow 1.15s ease-in-out infinite;
+      background: conic-gradient(from 0deg, #ff2a5f, #ff8a00, #ffe600, #00f59b, #00d4ff, #7c3aed, #ff00e5, #ff2a5f);
+      filter: blur(7px);
+      opacity: 0.6;
+      animation: ringRotate 4.8s linear infinite, ringBeatGlow 1.2s ease-in-out infinite;
       pointer-events: none;
     }
-
     .avatar-spectrum-ring {
       position: absolute;
       inset: 0;
       border-radius: 9999px;
-      background: conic-gradient(
-        from 0deg,
-        #ff2a5f,
-        #ff8a00,
-        #ffe600,
-        #00f59b,
-        #00d4ff,
-        #7c3aed,
-        #ff00e5,
-        #ff2a5f
-      );
-      animation: ringRotate 3.6s linear infinite;
+      background: conic-gradient(from 0deg, #ff2a5f, #ff8a00, #ffe600, #00f59b, #00d4ff, #7c3aed, #ff00e5, #ff2a5f);
+      animation: ringRotate 3.8s linear infinite;
       pointer-events: none;
     }
-
     .avatar-static-photo {
       position: absolute;
       inset: 3px;
@@ -184,70 +157,257 @@
       padding: 2px;
       z-index: 2;
     }
-
     .avatar-wrap.is-playing .avatar-spectrum-glow {
       animation: ringRotate 2.4s linear infinite, ringBeatGlow 0.62s ease-in-out infinite;
     }
 
-    /* Prominent Social Hero Cards */
-    .social-hero-tiktok {
-      position: relative;
-      background: linear-gradient(135deg, rgba(255, 0, 80, 0.17), rgba(0, 242, 234, 0.14) 55%, rgba(12, 13, 24, 0.94));
-      border: 1px solid rgba(0, 242, 234, 0.48);
-      box-shadow: 0 12px 35px -8px rgba(0, 242, 234, 0.36), 0 0 24px -8px rgba(255, 0, 80, 0.36);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .social-hero-tiktok:hover, .social-hero-tiktok:active {
-      transform: translateY(-2px) scale(1.012);
-      box-shadow: 0 18px 42px -6px rgba(0, 242, 234, 0.52), 0 0 30px -6px rgba(255, 0, 80, 0.48);
+    /* Tab Panels */
+    .tab-panel { display: none; flex-direction: column; gap: 10px; }
+    .tab-panel.active { display: flex; animation: panelIn 0.22s var(--spring); }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .social-hero-youtube {
-      position: relative;
-      background: linear-gradient(135deg, rgba(255, 0, 51, 0.22), rgba(217, 70, 239, 0.14) 55%, rgba(12, 13, 24, 0.94));
-      border: 1px solid rgba(255, 45, 85, 0.52);
-      box-shadow: 0 12px 35px -8px rgba(255, 0, 51, 0.38), 0 0 24px -8px rgba(217, 70, 239, 0.32);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* Social Hero Cards */
+    .social-hero-tiktok {
+      background: linear-gradient(135deg, rgba(255, 0, 80, 0.16), rgba(0, 242, 234, 0.12) 55%, rgba(12, 13, 24, 0.94));
+      border: 1px solid rgba(0, 242, 234, 0.42);
+      box-shadow: 0 10px 28px -8px rgba(0, 242, 234, 0.28);
+      transition: transform 0.16s var(--spring), border-color 0.16s ease;
     }
-    .social-hero-youtube:hover, .social-hero-youtube:active {
-      transform: translateY(-2px) scale(1.012);
-      box-shadow: 0 18px 42px -6px rgba(255, 0, 51, 0.55), 0 0 30px -6px rgba(217, 70, 239, 0.45);
-    }
+    .social-hero-tiktok:active { transform: scale(0.975); }
 
     .social-hero-locket {
-      position: relative;
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(249, 115, 22, 0.14) 55%, rgba(12, 13, 24, 0.94));
-      border: 1px solid rgba(251, 191, 36, 0.52);
-      box-shadow: 0 12px 35px -8px rgba(251, 191, 36, 0.36), 0 0 24px -8px rgba(249, 115, 22, 0.32);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(249, 115, 22, 0.12) 55%, rgba(12, 13, 24, 0.94));
+      border: 1px solid rgba(251, 191, 36, 0.46);
+      box-shadow: 0 10px 28px -8px rgba(251, 191, 36, 0.28);
+      transition: transform 0.16s var(--spring), border-color 0.16s ease;
     }
-    .social-hero-locket:hover, .social-hero-locket:active {
-      transform: translateY(-2px) scale(1.012);
-      box-shadow: 0 18px 42px -6px rgba(251, 191, 36, 0.55), 0 0 30px -6px rgba(249, 115, 22, 0.45);
-    }
+    .social-hero-locket:active { transform: scale(0.975); }
 
+    /* Compact Cards (Zero heavy stacked blur for 60fps iPhone Safari) */
     .util-card {
-      background: rgba(16, 17, 29, 0.76);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      background: rgba(15, 16, 28, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: transform 0.16s var(--spring), border-color 0.16s ease, background 0.16s ease;
     }
-    .util-card:hover, .util-card:active {
-      transform: translateY(-2px);
-      border-color: color-mix(in srgb, var(--neon-1) 55%, rgba(255,255,255,0.22));
-      background: rgba(24, 26, 44, 0.88);
+    .util-card:active {
+      transform: scale(0.975);
+      border-color: color-mix(in srgb, var(--neon-1) 55%, rgba(255,255,255,0.2));
+      background: rgba(24, 26, 44, 0.94);
     }
 
     .instant-tool-btn {
-      background: linear-gradient(155deg, rgba(22, 24, 42, 0.86), rgba(11, 12, 22, 0.92));
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      background: linear-gradient(155deg, rgba(20, 22, 38, 0.92), rgba(11, 12, 22, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: transform 0.16s var(--spring), border-color 0.16s ease;
     }
-    .instant-tool-btn:hover, .instant-tool-btn:active {
-      transform: translateY(-2px);
+    .instant-tool-btn:active {
+      transform: scale(0.95);
       border-color: color-mix(in srgb, var(--neon-1) 60%, transparent);
-      box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--neon-1) 35%, transparent);
+    }
+
+    /* Interactive Animated Folder (LucianLabs #440 inspired) */
+    .folder-shell {
+      background: rgba(15, 16, 28, 0.90);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 24px;
+      overflow: hidden;
+      transition: border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .folder-shell.is-open {
+      border-color: color-mix(in srgb, var(--neon-1) 46%, rgba(255, 255, 255, 0.16));
+      box-shadow: 0 14px 34px -12px color-mix(in srgb, var(--neon-1) 28%, transparent);
+    }
+    .folder-trigger {
+      width: 100%;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: transparent;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      text-align: left;
+    }
+    .folder-icon-wrap {
+      position: relative;
+      width: 44px;
+      height: 36px;
+      flex-shrink: 0;
+      perspective: 240px;
+    }
+    .folder-back {
+      position: absolute;
+      inset: 4px 0 0 0;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.28);
+    }
+    .folder-tab {
+      position: absolute;
+      top: 0;
+      left: 2px;
+      width: 18px;
+      height: 7px;
+      border-radius: 4px 4px 0 0;
+      background: #fbbf24;
+    }
+    .folder-paper {
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      top: 8px;
+      height: 18px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.92);
+      transform: translateY(0) scale(0.94);
+      transition: transform 0.28s var(--spring);
+    }
+    .folder-front {
+      position: absolute;
+      inset: 9px 0 0 0;
+      border-radius: 8px;
+      background: linear-gradient(155deg, #fcd34d, #f59e0b);
+      transform-origin: bottom center;
+      transition: transform 0.28s var(--spring);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+    .folder-shell.is-open .folder-paper {
+      transform: translateY(-7px) scale(1);
+    }
+    .folder-shell.is-open .folder-front {
+      transform: rotateX(-26deg);
+    }
+    .folder-chevron {
+      transition: transform 0.25s var(--spring);
+    }
+    .folder-shell.is-open .folder-chevron {
+      transform: rotate(180deg);
+    }
+    .folder-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.28s var(--spring);
+    }
+    .folder-shell.is-open .folder-body {
+      grid-template-rows: 1fr;
+    }
+    .folder-body-inner {
+      overflow: hidden;
+    }
+    .compact-link-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 11px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.14s var(--spring), background 0.14s ease, border-color 0.14s ease;
+    }
+    .compact-link-row:active {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.10);
+      border-color: color-mix(in srgb, var(--neon-1) 50%, transparent);
+    }
+
+    /* Floating Bottom Dock with LucianLabs #416 Sliding Active Pill */
+    .bio-dock {
+      position: fixed;
+      bottom: calc(12px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      height: 54px;
+      padding: 5px;
+      border-radius: 999px;
+      background: rgba(14, 15, 26, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .bio-dock-slider {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 68px;
+      height: 42px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--neon-1) 28%, rgba(255,255,255,0.12)), color-mix(in srgb, var(--neon-2) 24%, rgba(255,255,255,0.08)));
+      border: 1px solid color-mix(in srgb, var(--neon-1) 48%, rgba(255,255,255,0.15));
+      pointer-events: none;
+      transition: transform 0.28s var(--spring);
+      will-change: transform;
+      z-index: 0;
+    }
+    .bio-dock-btn {
+      position: relative;
+      z-index: 1;
+      width: 68px;
+      height: 42px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: rgba(248, 250, 252, 0.56);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: color 0.18s ease, transform 0.14s var(--spring);
+    }
+    .bio-dock-btn:active { transform: scale(0.9); }
+    .bio-dock-btn.active { color: #ffffff; }
+    .bio-dock-btn span { font-size: 9.5px; font-weight: 700; letter-spacing: 0.01em; line-height: 1; }
+
+    /* Dynamic Island Toast (LucianLabs #459 style) */
+    .di-toast {
+      position: fixed;
+      top: calc(10px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px) scale(0.88);
+      z-index: 70;
+      background: rgba(12, 13, 20, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid color-mix(in srgb, var(--neon-1) 42%, rgba(255,255,255,0.14));
+      color: #f8fafc;
+      padding: 8px 15px 8px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.28s var(--spring), opacity 0.2s ease;
+      max-width: 88vw;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72);
+    }
+    .di-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+    .di-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--neon-1);
+      box-shadow: 0 0 8px var(--neon-1);
+      flex-shrink: 0;
     }
 
     /* Tiny sound visualizer bars */
@@ -261,89 +421,90 @@
 
     /* Drawer Sheet Animation */
     @keyframes sheetUp {
-      from { transform: translateY(24px); opacity: 0; }
+      from { transform: translateY(28px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-    .sheet-panel {
-      animation: sheetUp 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-    }
+    .sheet-panel { animation: sheetUp 0.22s var(--spring); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="relative min-h-[100dvh] flex flex-col items-center justify-start px-3.5 py-4 sm:py-6">
+<body class="relative min-h-[100dvh] flex flex-col items-center justify-start px-3.5 pt-3.5 pb-24 sm:py-6">
 
   <canvas id="bgCanvas"></canvas>
   <div class="noise-overlay"></div>
 
-  <main class="relative z-10 w-full max-w-[460px] flex flex-col gap-4 pb-8">
+  <!-- Dynamic Island Toast -->
+  <div id="toast" class="di-toast"><span class="di-dot"></span><span id="toastText"></span></div>
+
+  <main class="relative z-10 w-full max-w-[450px] flex flex-col gap-3.5">
 
     <!-- Top Control Strip -->
     <div class="flex items-center justify-between gap-2 px-0.5">
-      <div class="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 bg-white/5 border border-white/10 rounded-full px-2.5 py-1 backdrop-blur-md">
+      <div class="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-300 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         <span id="weatherBadge">Hải Phòng • Live</span>
       </div>
 
       <div class="flex items-center gap-1.5">
-        <button id="btnGyro" type="button" title="Bật cảm biến nghiêng 3D trên iPhone" class="h-7 px-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-[11px] font-semibold text-cyan-300 flex items-center gap-1 transition">
+        <button id="btnGyro" type="button" title="Bật cảm biến nghiêng 3D trên iPhone" class="h-7 px-2.5 rounded-full bg-white/5 active:scale-95 border border-white/15 text-[11px] font-semibold text-cyan-300 flex items-center gap-1 transition">
           <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
           <span id="gyroLabel">3D Gyro</span>
         </button>
 
-        <button id="btnSound" type="button" title="Bật / Tắt nhạc nền" class="h-7 w-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-fuchsia-300 flex items-center justify-center gap-0.5 transition">
+        <button id="btnSound" type="button" title="Bật / Tắt nhạc nền" class="h-7 w-8 rounded-full bg-white/5 active:scale-95 border border-white/15 text-fuchsia-300 flex items-center justify-center gap-0.5 transition">
           <span class="eq-bar-1 w-0.5 h-3 bg-current rounded-full origin-bottom"></span>
           <span class="eq-bar-2 w-0.5 h-3.5 bg-current rounded-full origin-bottom"></span>
           <span class="eq-bar-3 w-0.5 h-2.5 bg-current rounded-full origin-bottom"></span>
         </button>
 
-        <button id="btnTheme" type="button" title="Đổi tông Hologram Neon" class="h-7 w-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 flex items-center justify-center transition">
+        <button id="btnTheme" type="button" title="Đổi tông Hologram Neon" class="h-7 w-7 rounded-full bg-white/5 active:scale-95 border border-white/15 text-zinc-200 flex items-center justify-center transition">
           <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
         </button>
 
-        <button id="btnQR" type="button" title="Mã QR & Chia sẻ Bio" class="h-7 w-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 text-zinc-200 flex items-center justify-center transition">
+        <button id="btnQR" type="button" title="Mã QR & Chia sẻ Bio" class="h-7 w-7 rounded-full bg-white/5 active:scale-95 border border-white/15 text-zinc-200 flex items-center justify-center transition">
           <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
         </button>
       </div>
     </div>
 
-    <!-- 3D Hologram Neon Profile Card (STATIC Avatar + 7-Color Animated Ring) -->
+    <!-- Compact 3D Hologram Neon Profile Card -->
     <section class="holo-stage">
-      <div id="holoCard" class="holo-card holo-border-glow rounded-[28px] p-5">
+      <div id="holoCard" class="holo-card holo-border-glow rounded-[26px] p-4">
         <div class="holo-foil"></div>
-        <div class="relative z-10 flex items-center gap-4">
+        <div class="relative z-10 flex items-center gap-3.5">
           <div id="avatarWrap" class="avatar-wrap">
             <div class="avatar-spectrum-glow"></div>
             <div class="avatar-spectrum-ring"></div>
             <div class="avatar-static-photo">
               <img src="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" alt="Shin Avatar" class="w-full h-full object-cover rounded-full" />
             </div>
-            <span class="absolute -bottom-0.5 -right-0.5 z-10 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-[9px] font-black text-zinc-950 tracking-wider shadow">
+            <span class="absolute -bottom-0.5 -right-0.5 z-10 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-[8.5px] font-black text-zinc-950 tracking-wider shadow">
               DEV
             </span>
           </div>
 
           <div class="min-w-0 flex-1">
-            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-[10px] font-bold text-cyan-300 tracking-wide mb-1.5">
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-[9.5px] font-bold text-cyan-300 tracking-wide mb-1">
               <span>HOLOCARD OS</span>
               <span>•</span>
               <span>0Đ ECOSYSTEM</span>
             </div>
-            <h1 class="text-xl sm:text-[22px] font-extrabold tracking-tight text-white leading-tight truncate" style="font-family: 'Space Grotesk', sans-serif;">
+            <h1 class="text-[19px] font-extrabold tracking-tight text-white leading-tight truncate" style="font-family: 'Space Grotesk', sans-serif;">
               Văn Trường - Dev Free
             </h1>
-            <p class="text-[12.5px] text-zinc-300/90 mt-1 leading-snug">
-              Creator • WebGL, Locket Gold &amp; Tiện Ích 0đ
+            <p class="text-[12px] text-zinc-300/85 mt-0.5 leading-snug truncate">
+              WebGL, Locket Gold &amp; Tiện Ích 0đ
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 1. PROMINENT HERO SECTION: SOCIAL MEDIA (MXH NỔI BẬT NHẤT) -->
-    <section class="flex flex-col gap-2.5">
+    <!-- ==================== TAB 1: HOME (MẠNG XÃ HỘI) ==================== -->
+    <section id="tabHome" class="tab-panel active">
       <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-cyan-300 flex items-center gap-1.5">
+        <span class="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-cyan-300 flex items-center gap-1.5">
           <i data-lucide="flame" class="w-3.5 h-3.5 text-fuchsia-400"></i>
           Mạng Xã Hội Chính
         </span>
@@ -352,10 +513,10 @@
 
       <!-- TikTok Spotlight Card -->
       <a href="https://www.tiktok.com/@v.truongg09127?_r=1&_t=ZS-9BeDirDOv0p" target="_blank" rel="noopener noreferrer"
-         class="social-hero-tiktok rounded-[24px] p-4 flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3.5 min-w-0">
-          <div class="w-12 h-12 rounded-2xl bg-black/70 border border-cyan-400/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(0,242,234,0.3)]">
-            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none">
+         class="social-hero-tiktok rounded-[22px] p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 rounded-2xl bg-black/75 border border-cyan-400/40 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none">
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" fill="url(#tkGrad)"/>
               <defs>
                 <linearGradient id="tkGrad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
@@ -367,14 +528,14 @@
             </svg>
           </div>
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-[16px] font-extrabold text-white tracking-tight">TikTok</span>
-              <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-cyan-400 to-pink-500 text-[9px] font-black text-zinc-950 uppercase">HOT</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[15px] font-extrabold text-white tracking-tight">TikTok</span>
+              <span class="px-1.5 py-0.5 rounded bg-gradient-to-r from-cyan-400 to-pink-500 text-[8.5px] font-black text-zinc-950 uppercase">HOT</span>
             </div>
-            <div class="text-[12.5px] font-medium text-cyan-200/90 truncate">@v.truongg09127</div>
+            <div class="text-[12px] font-medium text-cyan-200/90 truncate">@v.truongg09127</div>
           </div>
         </div>
-        <div class="shrink-0 px-3.5 py-2 rounded-full bg-white text-zinc-950 text-[12px] font-extrabold flex items-center gap-1 shadow-md group-hover:scale-105 transition">
+        <div class="shrink-0 px-3 py-1.5 rounded-full bg-white text-zinc-950 text-[11.5px] font-extrabold flex items-center gap-1">
           <span>Follow</span>
           <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
         </div>
@@ -382,82 +543,189 @@
 
       <!-- Locket Spotlight Card -->
       <a href="https://locket.cam/ttruonngg" target="_blank" rel="noopener noreferrer"
-         class="social-hero-locket rounded-[24px] p-4 flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3.5 min-w-0">
-          <div class="w-12 h-12 rounded-2xl bg-black/70 border border-amber-400/50 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(251,191,36,0.35)]">
-            <i data-lucide="heart" class="w-6 h-6 text-amber-400 fill-amber-400"></i>
+         class="social-hero-locket rounded-[22px] p-3.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 rounded-2xl bg-black/75 border border-amber-400/50 flex items-center justify-center shrink-0">
+            <i data-lucide="heart" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
           </div>
           <div class="min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="text-[16px] font-extrabold text-white tracking-tight">Locket</span>
-              <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-300 to-orange-400 text-[9px] font-black text-zinc-950 uppercase">GOLD</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[15px] font-extrabold text-white tracking-tight">Locket</span>
+              <span class="px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-300 to-orange-400 text-[8.5px] font-black text-zinc-950 uppercase">GOLD</span>
             </div>
-            <div class="text-[12.5px] font-medium text-amber-200/90 truncate">@ttruonngg</div>
+            <div class="text-[12px] font-medium text-amber-200/90 truncate">@ttruonngg</div>
           </div>
         </div>
-        <div class="shrink-0 px-3.5 py-2 rounded-full bg-amber-400 text-zinc-950 text-[12px] font-extrabold flex items-center gap-1 shadow-md group-hover:scale-105 transition">
+        <div class="shrink-0 px-3 py-1.5 rounded-full bg-amber-400 text-zinc-950 text-[11.5px] font-extrabold flex items-center gap-1">
           <span>Kết bạn</span>
           <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
         </div>
       </a>
 
-      <!-- Quick Connect Grid: YouTube • Facebook • Zalo • Telegram -->
-      <div class="grid grid-cols-2 gap-2 pt-0.5">
+      <!-- Compact 2x2 Social Grid -->
+      <div class="grid grid-cols-2 gap-2">
         <a href="https://youtube.com/@truonghoang-om2cf?si=hMOM6BHrg2WQnozd" target="_blank" rel="noopener noreferrer"
-           class="util-card rounded-2xl px-3.5 py-3 flex items-center gap-2.5 border-rose-500/35">
-          <div class="w-9 h-9 rounded-xl bg-rose-500/15 border border-rose-400/40 text-rose-400 flex items-center justify-center shrink-0">
+           class="util-card rounded-2xl px-3 py-2.5 flex items-center gap-2.5 border-rose-500/30">
+          <div class="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-400/35 text-rose-400 flex items-center justify-center shrink-0">
             <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none">
               <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" fill="#FF0033"/>
               <path d="M9.75 15.02l5.75-3.27-5.75-3.27v6.54z" fill="#FFFFFF"/>
             </svg>
           </div>
           <div class="min-w-0">
-            <div class="text-[13px] font-extrabold text-white leading-tight">YouTube</div>
-            <div class="text-[10.5px] text-rose-200/80 truncate">@truonghoang-om2cf</div>
+            <div class="text-[12.5px] font-extrabold text-white leading-tight">YouTube</div>
+            <div class="text-[10px] text-rose-200/80 truncate">Audio Đi Ngủ</div>
           </div>
         </a>
 
         <a href="https://www.facebook.com/share/19x62rwifm/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"
-           class="util-card rounded-2xl px-3.5 py-3 flex items-center gap-2.5 border-blue-500/35">
-          <div class="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-400/40 text-blue-400 flex items-center justify-center shrink-0">
+           class="util-card rounded-2xl px-3 py-2.5 flex items-center gap-2.5 border-blue-500/30">
+          <div class="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-400/35 text-blue-400 flex items-center justify-center shrink-0">
             <i data-lucide="facebook" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <div class="text-[13px] font-extrabold text-white leading-tight">Facebook</div>
-            <div class="text-[10.5px] text-blue-200/80 truncate">Văn Trường</div>
+            <div class="text-[12.5px] font-extrabold text-white leading-tight">Facebook</div>
+            <div class="text-[10px] text-blue-200/80 truncate">Văn Trường</div>
           </div>
         </a>
 
         <a href="http://zaloapp.com/qr/p/qbcabyzzxhmb" target="_blank" rel="noopener noreferrer"
-           class="util-card rounded-2xl px-3.5 py-3 flex items-center gap-2.5 border-sky-400/35">
-          <div class="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/40 text-sky-300 flex items-center justify-center shrink-0 font-black text-[12px]">
+           class="util-card rounded-2xl px-3 py-2.5 flex items-center gap-2.5 border-sky-400/30">
+          <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-400/35 text-sky-300 flex items-center justify-center shrink-0 font-black text-[12px]">
             Z
           </div>
           <div class="min-w-0">
-            <div class="text-[13px] font-extrabold text-white leading-tight">Zalo</div>
-            <div class="text-[10.5px] text-sky-200/80 truncate">Nhắn tin nhanh</div>
+            <div class="text-[12.5px] font-extrabold text-white leading-tight">Zalo</div>
+            <div class="text-[10px] text-sky-200/80 truncate">Nhắn tin nhanh</div>
           </div>
         </a>
 
         <a href="https://t.me/vantruong0911" target="_blank" rel="noopener noreferrer"
-           class="util-card rounded-2xl px-3.5 py-3 flex items-center gap-2.5 border-cyan-400/35">
-          <div class="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shrink-0">
+           class="util-card rounded-2xl px-3 py-2.5 flex items-center gap-2.5 border-cyan-400/30">
+          <div class="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 flex items-center justify-center shrink-0">
             <i data-lucide="send" class="w-4 h-4"></i>
           </div>
           <div class="min-w-0">
-            <div class="text-[13px] font-extrabold text-white leading-tight">Telegram</div>
-            <div class="text-[10.5px] text-cyan-200/80 truncate">@vantruong0911</div>
+            <div class="text-[12.5px] font-extrabold text-white leading-tight">Telegram</div>
+            <div class="text-[10px] text-cyan-200/80 truncate">@vantruong0911</div>
           </div>
         </a>
       </div>
     </section>
 
-    <!-- 2. INSTANT IN-BIO TOOLS (DÙNG NGAY TRONG BIO) -->
-    <section class="flex flex-col gap-2">
+    <!-- ==================== TAB 2: DỰ ÁN (ANIMATED FOLDERS) ==================== -->
+    <section id="tabProjects" class="tab-panel">
       <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-fuchsia-300 flex items-center gap-1.5">
+        <span class="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-amber-300 flex items-center gap-1.5">
+          <i data-lucide="folder-open" class="w-3.5 h-3.5 text-amber-400"></i>
+          Dự Án Đang Chạy
+        </span>
+        <span class="text-[10px] text-zinc-400">Chạm Folder để mở</span>
+      </div>
+
+      <!-- Interactive Folder: Hệ Sinh Thái Locket (Open by default) -->
+      <div id="folderLocket" class="folder-shell is-open">
+        <button id="btnToggleFolderLocket" type="button" class="folder-trigger">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="folder-icon-wrap">
+              <div class="folder-tab"></div>
+              <div class="folder-back"></div>
+              <div class="folder-paper"></div>
+              <div class="folder-front"></div>
+            </div>
+            <div class="min-w-0">
+              <div class="text-[14px] font-extrabold text-white leading-tight">Hệ Sinh Thái Locket</div>
+              <div class="text-[11px] text-amber-200/80 mt-0.5">3 công cụ • Web &amp; Shadowrocket</div>
+            </div>
+          </div>
+          <div class="w-7 h-7 rounded-full bg-white/8 flex items-center justify-center text-zinc-300 shrink-0">
+            <i data-lucide="chevron-down" class="w-4 h-4 folder-chevron"></i>
+          </div>
+        </button>
+
+        <div class="folder-body">
+          <div class="folder-body-inner px-3 pb-3 flex flex-col gap-2">
+            <!-- 1. Locket gold Full chức năng ( Web ) -->
+            <a href="https://locket-gold-vantruong.noobnopro2007.workers.dev/" target="_blank" rel="noopener noreferrer"
+               class="compact-link-row">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
+                  <i data-lucide="camera" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[12.5px] font-bold text-white truncate">Locket gold Full chức năng ( Web )</div>
+                  <div class="text-[10px] text-amber-200/75 truncate">Bản Share • Chạy thẳng Safari</div>
+                </div>
+              </div>
+              <span class="shrink-0 w-7 h-7 rounded-full bg-amber-400/15 text-amber-300 flex items-center justify-center">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </a>
+
+            <!-- 2. DNS giữ Locket gold ( shadowrocket ) -->
+            <a href="https://dnslocket.streamlit.app" target="_blank" rel="noopener noreferrer"
+               class="compact-link-row">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center shrink-0">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[12.5px] font-bold text-white truncate">DNS giữ Locket gold ( shadowrocket )</div>
+                  <div class="text-[10px] text-zinc-400 truncate">Cấu hình DNS ổn định cho iPhone</div>
+                </div>
+              </div>
+              <span class="shrink-0 w-7 h-7 rounded-full bg-white/8 text-zinc-300 flex items-center justify-center">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </a>
+
+            <!-- 3. Caption Locket (shadowrocket) -->
+            <a href="https://captionlocket.netlify.app" target="_blank" rel="noopener noreferrer"
+               class="compact-link-row">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-xl bg-violet-500/15 border border-violet-400/35 text-violet-300 flex items-center justify-center shrink-0">
+                  <i data-lucide="message-circle" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[12.5px] font-bold text-white truncate">Caption Locket (shadowrocket)</div>
+                  <div class="text-[10px] text-zinc-400 truncate">Tùy biến màu &amp; icon caption iOS</div>
+                </div>
+              </div>
+              <span class="shrink-0 w-7 h-7 rounded-full bg-white/8 text-zinc-300 flex items-center justify-center">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standalone Card: Web chỉnh tone màu ảnh -->
+      <a href="https://tonelab-studio-vantruong.sipilike09.workers.dev" target="_blank" rel="noopener noreferrer"
+         class="util-card rounded-[22px] p-3.5 flex items-center justify-between gap-3 border-sky-400/30">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/40 text-sky-300 flex items-center justify-center shrink-0">
+            <i data-lucide="wand-sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[13.5px] font-extrabold text-white truncate">Web chỉnh tone màu ảnh</span>
+              <span class="px-1.5 py-0.5 rounded bg-sky-400/20 text-[9px] font-bold text-sky-300">V6.3</span>
+            </div>
+            <p class="text-[11px] text-zinc-400 truncate mt-0.5">ToneLab ULTRA • WebGL, Face AI, LUT 0đ</p>
+          </div>
+        </div>
+        <span class="shrink-0 w-8 h-8 rounded-full bg-sky-400/15 text-sky-300 flex items-center justify-center">
+          <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+        </span>
+      </a>
+    </section>
+
+    <!-- ==================== TAB 3: TIỆN ÍCH DÙNG NGAY ==================== -->
+    <section id="tabTools" class="tab-panel">
+      <div class="flex items-center justify-between px-1">
+        <span class="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-fuchsia-300 flex items-center gap-1.5">
           <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i>
-          Tiện Ích Dùng Ngay
+          Tiện Ích Dùng Ngay (0đ)
         </span>
         <span class="text-[10px] text-zinc-400">Mở trực tiếp tại chỗ</span>
       </div>
@@ -489,140 +757,81 @@
           </div>
           <div>
             <div class="text-[12px] font-bold text-white leading-tight">Vòng Quay</div>
-            <div class="text-[10px] text-zinc-400 mt-0.5">Thêm tên riêng</div>
+            <div class="text-[10px] text-zinc-400 mt-0.5">Lưu tên riêng</div>
           </div>
         </button>
       </div>
-    </section>
 
-    <!-- 3. EXISTING ECOSYSTEM APPS (HỆ SINH THÁI LOCKET & ẢNH) -->
-    <section class="flex flex-col gap-2">
-      <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-300 flex items-center gap-1.5">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
-          Hệ Sinh Thái Locket &amp; Ảnh
-        </span>
-        <span class="text-[10px] text-zinc-500">4 web đang chạy</span>
+      <div class="util-card rounded-2xl p-3 text-[11px] text-zinc-400 leading-relaxed flex items-center gap-2.5">
+        <i data-lucide="shield" class="w-4 h-4 text-cyan-300 shrink-0"></i>
+        <span>Toàn bộ tiện ích chạy trực tiếp trên trình duyệt iPhone, tự lưu số tài khoản &amp; danh sách tên vào máy bạn.</span>
       </div>
-
-      <a href="https://tonelab-studio-vantruong.sipilike09.workers.dev" target="_blank" rel="noopener noreferrer"
-         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/35 text-sky-300 flex items-center justify-center shrink-0">
-            <i data-lucide="wand-sparkles" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="text-[13.5px] font-bold text-white truncate">Web Chỉnh Ảnh ToneLab ULTRA</div>
-            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Chỉnh màu WebGL, Face AI, LUT &amp; Tách nền 0đ</p>
-          </div>
-        </div>
-        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
-      </a>
-
-      <a href="https://upvideo.streamlit.app" target="_blank" rel="noopener noreferrer"
-         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-400/35 text-amber-300 flex items-center justify-center shrink-0">
-            <i data-lucide="camera" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="text-[13.5px] font-bold text-white truncate">Up Video 60s, Photobooth &amp; Filter Locket</div>
-            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Locket Gold Studio • LED Audi, Đĩa Than, Rửa AI</p>
-          </div>
-        </div>
-        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
-      </a>
-
-      <a href="https://dnslocket.streamlit.app" target="_blank" rel="noopener noreferrer"
-         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center shrink-0">
-            <i data-lucide="shield-check" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="text-[13.5px] font-bold text-white truncate">DNS Giữ Locket Gold Vĩnh Viễn</div>
-            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Cấu hình DNS ổn định cho iPhone</p>
-          </div>
-        </div>
-        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
-      </a>
-
-      <a href="https://captionlocket.netlify.app" target="_blank" rel="noopener noreferrer"
-         class="util-card rounded-2xl p-3.5 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-400/35 text-violet-300 flex items-center justify-center shrink-0">
-            <i data-lucide="message-circle" class="w-5 h-5"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="text-[13.5px] font-bold text-white truncate">Tùy Chỉnh Caption Locket (Shadowrocket)</div>
-            <p class="text-[11.5px] text-zinc-400 truncate mt-0.5">Module chỉnh màu &amp; icon caption Locket trên iOS</p>
-          </div>
-        </div>
-        <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-400 shrink-0"></i>
-      </a>
     </section>
 
-    <!-- 4. PRO LABS MODULES (CÁC APP GPU / CAMERA NẶNG SẼ TRIỂN KHAI THEO ROUTE CON) -->
-    <section class="flex flex-col gap-2">
+    <!-- ==================== TAB 4: PRO LABS (2 MODULE THẬT) ==================== -->
+    <section id="tabLabs" class="tab-panel">
       <div class="flex items-center justify-between px-1">
-        <span class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-zinc-400 flex items-center gap-1.5">
+        <span class="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-indigo-300 flex items-center gap-1.5">
           <i data-lucide="cpu" class="w-3.5 h-3.5 text-fuchsia-400"></i>
           Pro Labs (Đường Dẫn Con)
         </span>
-        <span class="text-[10px] text-zinc-500">4 module chuyên sâu</span>
+        <span class="text-[10px] text-zinc-400">2 công cụ chuyên sâu</span>
       </div>
 
-      <div class="grid grid-cols-2 gap-2">
-        <a href="./sticker/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+      <div class="grid grid-cols-2 gap-2.5">
+        <a href="./earth/" class="util-card rounded-[22px] p-3.5 text-left flex flex-col gap-2 border-indigo-400/30">
           <div class="flex items-center justify-between">
-            <span class="w-8 h-8 rounded-lg bg-pink-500/15 border border-pink-400/35 text-pink-300 flex items-center justify-center">
-              <i data-lucide="smile-plus" class="w-4 h-4"></i>
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/sticker</span>
-          </div>
-          <div class="text-[12.5px] font-bold text-white">StickerForge + Filter</div>
-          <div class="text-[10.5px] text-zinc-400 leading-snug">Filter AR TikTok &amp; đúc sticker động</div>
-        </a>
-
-        <a href="./fit/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <span class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 flex items-center justify-center">
-              <i data-lucide="shirt" class="w-4 h-4"></i>
-            </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/fit</span>
-          </div>
-          <div class="text-[12.5px] font-bold text-white">FitMirror AR</div>
-          <div class="text-[10.5px] text-zinc-400 leading-snug">Ướm đồ, kính, tóc Shopee qua camera</div>
-        </a>
-
-        <a href="./earth/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <span class="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-400/35 text-indigo-300 flex items-center justify-center">
+            <span class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-400/40 text-indigo-300 flex items-center justify-center">
               <i data-lucide="globe" class="w-4 h-4"></i>
             </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/earth</span>
+            <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-indigo-200">/earth</span>
           </div>
-          <div class="text-[12.5px] font-bold text-white">EarthZoom 3D</div>
-          <div class="text-[10.5px] text-zinc-400 leading-snug">Zoom từ vũ trụ xuống tọa độ ảnh GPS</div>
+          <div>
+            <div class="text-[13px] font-extrabold text-white">EarthZoom 3D</div>
+            <div class="text-[10.5px] text-zinc-400 leading-snug mt-0.5">Vệ tinh 3D từ vũ trụ lao xuống tọa độ ảnh GPS</div>
+          </div>
         </a>
 
-        <a href="./down/" class="util-card rounded-2xl p-3 text-left flex flex-col gap-1.5">
+        <a href="./down/" class="util-card rounded-[22px] p-3.5 text-left flex flex-col gap-2 border-amber-400/30">
           <div class="flex items-center justify-between">
-            <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-400/35 text-amber-300 flex items-center justify-center">
+            <span class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-400/40 text-amber-300 flex items-center justify-center">
               <i data-lucide="download" class="w-4 h-4"></i>
             </span>
-            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">/down</span>
+            <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-amber-200">/down</span>
           </div>
-          <div class="text-[12.5px] font-bold text-white">SocialRip &amp; Soi Video</div>
-          <div class="text-[10.5px] text-zinc-400 leading-snug">Tải không logo &amp; soi chỉ số TikTok/YT</div>
+          <div>
+            <div class="text-[13px] font-extrabold text-white">SocialRip &amp; Soi</div>
+            <div class="text-[10.5px] text-zinc-400 leading-snug mt-0.5">Tải không logo &amp; soi chỉ số TikTok / YouTube</div>
+          </div>
         </a>
       </div>
     </section>
 
-    <footer class="text-center text-[11px] text-zinc-500 pt-1">
+    <footer class="text-center text-[10.5px] text-zinc-500 pt-1">
       HoloCard OS • Văn Trường - Dev Free
     </footer>
   </main>
+
+  <!-- ==================== FLOATING BOTTOM DOCK ==================== -->
+  <nav class="bio-dock" aria-label="Điều hướng chính">
+    <div id="bioDockSlider" class="bio-dock-slider"></div>
+    <button type="button" class="bio-dock-btn active" data-tab="tabHome" data-idx="0">
+      <i data-lucide="home" class="w-4 h-4"></i>
+      <span>Home</span>
+    </button>
+    <button type="button" class="bio-dock-btn" data-tab="tabProjects" data-idx="1">
+      <i data-lucide="folder" class="w-4 h-4"></i>
+      <span>Dự án</span>
+    </button>
+    <button type="button" class="bio-dock-btn" data-tab="tabTools" data-idx="2">
+      <i data-lucide="zap" class="w-4 h-4"></i>
+      <span>Tiện ích</span>
+    </button>
+    <button type="button" class="bio-dock-btn" data-tab="tabLabs" data-idx="3">
+      <i data-lucide="cpu" class="w-4 h-4"></i>
+      <span>Labs</span>
+    </button>
+  </nav>
 
   <!-- ==================== MODAL 1: QR LINK GENERATOR ==================== -->
   <div id="modalQRTool" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-2.5 sm:p-4">
@@ -670,7 +879,6 @@
         </button>
       </div>
 
-      <!-- Optional Bill Photo Preview -->
       <div class="mb-2.5">
         <label for="billPhotoInput" class="w-full py-2 px-3 rounded-xl bg-emerald-500/10 border border-dashed border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer">
           <i data-lucide="camera" class="w-4 h-4"></i>
@@ -698,7 +906,6 @@ Gửi xe 30k</textarea>
 
       <div id="billBreakdown" class="text-[11px] text-zinc-400 mb-3 bg-white/5 rounded-xl px-3 py-2"></div>
 
-      <!-- Bank Info for VietQR -->
       <div class="grid grid-cols-2 gap-2 mb-2">
         <div>
           <label class="block text-[10.5px] font-semibold text-zinc-400 mb-1">Ngân hàng nhận:</label>
@@ -783,22 +990,7 @@ Khánh</textarea>
     </div>
   </div>
 
-  <!-- ==================== MODAL 4: PRO LABS ROUTE INFO ==================== -->
-  <div id="modalLabInfo" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="sheet-panel w-full max-w-[360px] rounded-[26px] bg-[#0e101c] border border-cyan-400/35 p-5 shadow-2xl">
-      <div class="flex items-center justify-between mb-2">
-        <span id="labInfoTitle" class="text-sm font-extrabold text-white"></span>
-        <button type="button" data-close="modalLabInfo" class="w-7 h-7 rounded-full bg-white/10 text-zinc-300 flex items-center justify-center">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <p id="labInfoDesc" class="text-xs text-zinc-300 leading-relaxed mb-3"></p>
-      <div class="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-[11px] text-cyan-300 font-mono mb-3" id="labInfoRoute"></div>
-      <button type="button" data-close="modalLabInfo" class="w-full py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-bold text-white">Đóng</button>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL 5: SHARE BIO QR ==================== -->
+  <!-- ==================== MODAL 4: SHARE BIO QR ==================== -->
   <div id="qrModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div class="sheet-panel w-full max-w-[340px] rounded-[26px] bg-[#0e101c] border border-cyan-400/30 p-5 text-center shadow-2xl">
       <div class="flex items-center justify-between mb-3">
@@ -815,19 +1007,19 @@ Khánh</textarea>
     </div>
   </div>
 
-  <!-- In-page Toast -->
-  <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] px-4 py-2 rounded-full bg-zinc-900/95 border border-cyan-400/40 text-xs font-semibold text-cyan-200 shadow-lg"></div>
-
   <script>
-    lucide.createIcons();
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
 
     const toastEl = document.getElementById("toast");
+    const toastTextEl = document.getElementById("toastText");
     let toastTimer = null;
     function showToast(msg) {
-      toastEl.textContent = msg;
-      toastEl.classList.remove("hidden");
+      toastTextEl.textContent = msg;
+      toastEl.classList.add("show");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toastEl.classList.add("hidden"), 2400);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2400);
     }
 
     function copyTextSafe(text, successMsg) {
@@ -847,17 +1039,59 @@ Khánh</textarea>
       showToast(successMsg);
     }
 
-    // Generic modal close wiring
-    document.querySelectorAll("[data-close]").forEach((btn) => {
+    // Floating Bottom Dock Navigation (Sliding Pill)
+    const dockBtns = document.querySelectorAll(".bio-dock-btn");
+    const dockSlider = document.getElementById("bioDockSlider");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+
+    function switchBioTab(tabId, idx) {
+      tabPanels.forEach((p) => p.classList.toggle("active", p.id === tabId));
+      dockBtns.forEach((b) => b.classList.toggle("active", b.getAttribute("data-tab") === tabId));
+      if (dockSlider) {
+        dockSlider.style.transform = "translateX(" + (idx * 72) + "px)"; // 68px + 4px gap
+      }
+    }
+
+    dockBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        const target = document.getElementById(btn.getAttribute("data-close"));
-        if (target) target.classList.add("hidden");
+        const tabId = btn.getAttribute("data-tab");
+        const idx = parseInt(btn.getAttribute("data-idx") || "0", 10);
+        switchBioTab(tabId, idx);
       });
     });
-    ["modalQRTool", "modalBillTool", "modalWheelTool", "modalLabInfo"].forEach((id) => {
+
+    // Interactive Locket Folder Toggle
+    const folderLocket = document.getElementById("folderLocket");
+    document.getElementById("btnToggleFolderLocket").addEventListener("click", () => {
+      folderLocket.classList.toggle("is-open");
+    });
+
+    // Modal state helper (pauses bgCanvas while a modal is open for cooler iPhone Safari)
+    const ALL_MODAL_IDS = ["modalQRTool", "modalBillTool", "modalWheelTool", "qrModal"];
+    function isAnyModalOpen() {
+      return ALL_MODAL_IDS.some((id) => {
+        const el = document.getElementById(id);
+        return el && !el.classList.contains("hidden");
+      });
+    }
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("hidden");
+      pauseBg();
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+      if (!isAnyModalOpen()) resumeBg();
+    }
+
+    document.querySelectorAll("[data-close]").forEach((btn) => {
+      btn.addEventListener("click", () => closeModal(btn.getAttribute("data-close")));
+    });
+    ["modalQRTool", "modalBillTool", "modalWheelTool"].forEach((id) => {
       const el = document.getElementById(id);
       el.addEventListener("click", (e) => {
-        if (e.target === el) el.classList.add("hidden");
+        if (e.target === el) closeModal(id);
       });
     });
 
@@ -945,43 +1179,62 @@ Khánh</textarea>
       }
     });
 
-    // 3. Animated Neon Mesh Background
+    // 3. Optimized Animated Neon Mesh Background (0.5x buffer + smart pause)
     const bgCanvas = document.getElementById("bgCanvas");
     const bgCtx = bgCanvas.getContext("2d");
     const orbs = [
-      { x: 0.2, y: 0.2, r: 220, vx: 0.0005, vy: 0.0004, c: "rgba(0, 245, 255, 0.16)" },
-      { x: 0.8, y: 0.35, r: 240, vx: -0.0004, vy: 0.0005, c: "rgba(255, 0, 229, 0.14)" },
-      { x: 0.5, y: 0.8, r: 260, vx: 0.0003, vy: -0.0004, c: "rgba(124, 58, 237, 0.16)" },
+      { x: 0.2, y: 0.2, r: 120, vx: 0.0005, vy: 0.0004, c: "rgba(0, 245, 255, 0.16)" },
+      { x: 0.8, y: 0.35, r: 130, vx: -0.0004, vy: 0.0005, c: "rgba(255, 0, 229, 0.14)" },
+      { x: 0.5, y: 0.8, r: 140, vx: 0.0003, vy: -0.0004, c: "rgba(124, 58, 237, 0.16)" },
     ];
     function resizeBg() {
-      bgCanvas.width = window.innerWidth;
-      bgCanvas.height = window.innerHeight;
+      bgCanvas.width = Math.max(200, Math.floor(window.innerWidth * 0.5));
+      bgCanvas.height = Math.max(200, Math.floor(window.innerHeight * 0.5));
     }
     window.addEventListener("resize", resizeBg);
     resizeBg();
 
     let bgAnimId = null;
-    function drawBg() {
-      const w = bgCanvas.width, h = bgCanvas.height;
-      bgCtx.clearRect(0, 0, w, h);
-      for (const o of orbs) {
-        o.x += o.vx;
-        o.y += o.vy;
-        if (o.x < 0.05 || o.x > 0.95) o.vx *= -1;
-        if (o.y < 0.05 || o.y > 0.95) o.vy *= -1;
-        const gx = o.x * w, gy = o.y * h;
-        const grad = bgCtx.createRadialGradient(gx, gy, 0, gx, gy, o.r);
-        grad.addColorStop(0, o.c);
-        grad.addColorStop(1, "transparent");
-        bgCtx.fillStyle = grad;
-        bgCtx.fillRect(0, 0, w, h);
+    let lastBgTs = 0;
+    function drawBg(ts) {
+      if (document.hidden || isAnyModalOpen()) {
+        bgAnimId = null;
+        return;
+      }
+      if (!lastBgTs || ts - lastBgTs >= 32) {
+        lastBgTs = ts;
+        const w = bgCanvas.width, h = bgCanvas.height;
+        bgCtx.clearRect(0, 0, w, h);
+        for (const o of orbs) {
+          o.x += o.vx;
+          o.y += o.vy;
+          if (o.x < 0.05 || o.x > 0.95) o.vx *= -1;
+          if (o.y < 0.05 || o.y > 0.95) o.vy *= -1;
+          const gx = o.x * w, gy = o.y * h;
+          const grad = bgCtx.createRadialGradient(gx, gy, 0, gx, gy, o.r);
+          grad.addColorStop(0, o.c);
+          grad.addColorStop(1, "transparent");
+          bgCtx.fillStyle = grad;
+          bgCtx.fillRect(0, 0, w, h);
+        }
       }
       bgAnimId = requestAnimationFrame(drawBg);
     }
-    if (bgAnimId) cancelAnimationFrame(bgAnimId);
-    drawBg();
+    function pauseBg() {
+      if (bgAnimId) { cancelAnimationFrame(bgAnimId); bgAnimId = null; }
+    }
+    function resumeBg() {
+      if (!bgAnimId && !document.hidden && !isAnyModalOpen()) {
+        bgAnimId = requestAnimationFrame(drawBg);
+      }
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseBg();
+      else resumeBg();
+    });
+    resumeBg();
 
-    // 4. Direct Background Music ("Shape of You" — no <audio> tag, unaffected by ring animations)
+    // 4. Direct Background Music ("Shape of You")
     let bgAudio = null;
     let musicReady = false;
     let isPlaying = false;
@@ -1055,16 +1308,15 @@ Khánh</textarea>
         qr.make();
         qrBox.innerHTML = qr.createSvgTag({ scalable: true });
       }
-      qrModal.classList.remove("hidden");
+      openModal("qrModal");
     });
-    document.getElementById("btnCloseQR").addEventListener("click", () => qrModal.classList.add("hidden"));
+    document.getElementById("btnCloseQR").addEventListener("click", () => closeModal("qrModal"));
     qrModal.addEventListener("click", (e) => {
-      if (e.target === qrModal) qrModal.classList.add("hidden");
+      if (e.target === qrModal) closeModal("qrModal");
     });
     document.getElementById("btnCopyLink").addEventListener("click", () => copyTextSafe(window.location.href, "Đã sao chép link Bio!"));
 
     // ==================== TOOL 1: QR LINK GENERATOR ====================
-    const modalQRTool = document.getElementById("modalQRTool");
     const qrInputText = document.getElementById("qrInputText");
     const qrToolCanvas = document.getElementById("qrToolCanvas");
     let qrFgColor = "#000000";
@@ -1093,7 +1345,7 @@ Khánh</textarea>
     }
 
     document.getElementById("openToolQR").addEventListener("click", () => {
-      modalQRTool.classList.remove("hidden");
+      openModal("modalQRTool");
       renderQRTool();
     });
     qrInputText.addEventListener("input", renderQRTool);
@@ -1115,7 +1367,6 @@ Khánh</textarea>
     });
 
     // ==================== TOOL 2: BILL SPLIT & VIETQR ====================
-    const modalBillTool = document.getElementById("modalBillTool");
     const billNotesInput = document.getElementById("billNotesInput");
     const billPeopleCount = document.getElementById("billPeopleCount");
     const billPerPersonText = document.getElementById("billPerPersonText");
@@ -1128,7 +1379,6 @@ Khánh</textarea>
     const vietqrImg = document.getElementById("vietqrImg");
     const vietqrCaption = document.getElementById("vietqrCaption");
 
-    // Restore saved bank info
     try {
       const savedBank = JSON.parse(localStorage.getItem("holo_vietqr_bank") || "null");
       if (savedBank) {
@@ -1146,7 +1396,7 @@ Khánh</textarea>
       for (const line of lines) {
         let m;
         while ((m = regex.exec(line)) !== null) {
-          let numStr = m[1];
+          const numStr = m[1];
           const unit = (m[2] || "").toLowerCase();
           let val = 0;
           if (unit === "tr" || unit === "triệu" || unit === "trieu" || unit === "m") {
@@ -1174,7 +1424,7 @@ Khánh</textarea>
     }
 
     document.getElementById("openToolBill").addEventListener("click", () => {
-      modalBillTool.classList.remove("hidden");
+      openModal("modalBillTool");
       recalcBill();
     });
     billNotesInput.addEventListener("input", recalcBill);
@@ -1217,14 +1467,18 @@ Khánh</textarea>
       showToast("Đã tạo mã VietQR chuẩn Napas!");
     });
 
-    // ==================== TOOL 3: LUCKY WHEEL ====================
-    const modalWheelTool = document.getElementById("modalWheelTool");
+    // ==================== TOOL 3: LUCKY WHEEL (WITH LOCALSTORAGE) ====================
     const wheelCanvas = document.getElementById("wheelCanvas");
     const wheelCtx = wheelCanvas.getContext("2d");
     const wheelNamesInput = document.getElementById("wheelNamesInput");
     const wheelResultBanner = document.getElementById("wheelResultBanner");
     const wheelWinnerText = document.getElementById("wheelWinnerText");
     const btnRemoveWinner = document.getElementById("btnRemoveWinner");
+
+    try {
+      const savedWheel = localStorage.getItem("holo_wheel_names");
+      if (savedWheel && savedWheel.trim()) wheelNamesInput.value = savedWheel;
+    } catch (e) {}
 
     const WHEEL_PALETTE = ["#00d4ff", "#ff00a8", "#7c3aed", "#10b981", "#f59e0b", "#ef4444", "#3b82f6", "#ec4899"];
     let wheelAngle = 0;
@@ -1235,6 +1489,10 @@ Khánh</textarea>
     function getWheelItems() {
       const arr = wheelNamesInput.value.split("\n").map((s) => s.trim()).filter(Boolean);
       return arr.length ? arr : ["Mục 1", "Mục 2"];
+    }
+
+    function saveWheelNames() {
+      try { localStorage.setItem("holo_wheel_names", wheelNamesInput.value); } catch (e) {}
     }
 
     function drawWheel() {
@@ -1279,15 +1537,17 @@ Khánh</textarea>
     }
 
     document.getElementById("openToolWheel").addEventListener("click", () => {
-      modalWheelTool.classList.remove("hidden");
+      openModal("modalWheelTool");
       drawWheel();
     });
     wheelNamesInput.addEventListener("input", () => {
+      saveWheelNames();
       if (!wheelSpinning) drawWheel();
     });
     document.getElementById("btnWheelPresetFood").addEventListener("click", () => {
       if (wheelSpinning) return;
       wheelNamesInput.value = "Bún đậu\nLẩu nướng\nBánh đa cua\nTrà sữa\nGà rán\nBún bò";
+      saveWheelNames();
       drawWheel();
     });
 
@@ -1335,46 +1595,11 @@ Khánh</textarea>
       const items = getWheelItems();
       items.splice(lastWinnerIndex, 1);
       wheelNamesInput.value = items.join("\n");
+      saveWheelNames();
       lastWinnerIndex = -1;
       btnRemoveWinner.classList.add("hidden");
       wheelResultBanner.classList.add("hidden");
       drawWheel();
-    });
-
-    // ==================== PRO LABS SUB-ROUTE SHEET ====================
-    const LAB_DETAILS = {
-      sticker: {
-        title: "StickerForge + Filter TikTok AR",
-        desc: "Chạy độc lập để tối ưu RAM Safari cho MediaPipe 468 điểm mặt & WebGL2: gắn filter phụ kiện AR bám mặt 60fps và đúc bộ sticker động nền trong suốt gửi Messenger/Zalo.",
-        route: "Đường dẫn đề xuất: /sticker/index.html"
-      },
-      fit: {
-        title: "FitMirror AR — Ướm Đồ Shopee",
-        desc: "Tách nền ảnh quần áo, kính, kiểu tóc từ Shopee/TikTok Shop và ướm trực tiếp qua camera MediaPipe Pose/Face kèm đo tông da.",
-        route: "Đường dẫn đề xuất: /fit/index.html"
-      },
-      earth: {
-        title: "EarthZoom 3D — Bay Từ Vũ Trụ",
-        desc: "Đọc tọa độ GPS (EXIF) từ ảnh chụp trong máy để dựng video 3D zoom từ ngoài Trái Đất lao xuống đúng địa điểm check-in.",
-        route: "Đường dẫn đề xuất: /earth/index.html"
-      },
-      down: {
-        title: "SocialRip — Tải & Soi Chỉ Số Video MXH",
-        desc: "Dán link TikTok / YouTube để tải video không logo, lấy nhạc gốc và xem chỉ số view, tim, bình luận qua Cloudflare Worker.",
-        route: "Đường dẫn đề xuất: /down/index.html"
-      }
-    };
-    const modalLabInfo = document.getElementById("modalLabInfo");
-    document.querySelectorAll(".lab-card").forEach((card) => {
-      card.addEventListener("click", () => {
-        const key = card.getAttribute("data-lab");
-        const info = LAB_DETAILS[key];
-        if (!info) return;
-        document.getElementById("labInfoTitle").textContent = info.title;
-        document.getElementById("labInfoDesc").textContent = info.desc;
-        document.getElementById("labInfoRoute").textContent = info.route;
-        modalLabInfo.classList.remove("hidden");
-      });
     });
   </script>
 </body>
