@@ -427,9 +427,84 @@
     .sheet-panel { animation: sheetUp 0.22s var(--spring); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* 0.6s iOS Splash Logo Pop + Staggered Card Cascade */
+    .bio-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: radial-gradient(circle at 50% 35%, #121528 0%, #05050a 72%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: opacity 0.32s var(--spring), transform 0.32s var(--spring);
+      will-change: opacity, transform;
+    }
+    .bio-splash.splash-out {
+      opacity: 0;
+      transform: scale(1.06);
+      pointer-events: none;
+    }
+    .bio-splash-avatar {
+      position: relative;
+      width: 82px;
+      height: 82px;
+      animation: bioSplashPop 0.46s var(--spring) both;
+    }
+    .bio-splash-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      animation: bioSplashTxt 0.4s var(--spring) 0.1s both;
+    }
+    @keyframes bioSplashPop {
+      0% { opacity: 0; transform: scale(0.7); }
+      72% { opacity: 1; transform: scale(1.06); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes bioSplashTxt {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    body.bio-ready .holo-stage { animation: bioZoomIn 0.42s var(--spring) 0.05s both; }
+    body.bio-ready .bio-dock { animation: bioDockIn 0.44s var(--spring) 0.22s both; }
+    .tab-panel.active > * {
+      animation: bioCascade 0.34s var(--spring) both;
+    }
+    .tab-panel.active > *:nth-child(1) { animation-delay: 0.03s; }
+    .tab-panel.active > *:nth-child(2) { animation-delay: 0.07s; }
+    .tab-panel.active > *:nth-child(3) { animation-delay: 0.11s; }
+    .tab-panel.active > *:nth-child(4) { animation-delay: 0.15s; }
+    @keyframes bioZoomIn {
+      from { opacity: 0; transform: scale(0.94) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes bioCascade {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bioDockIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(18px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
   </style>
 </head>
 <body class="relative min-h-[100dvh] flex flex-col items-center justify-start px-3.5 pt-3.5 pb-24 sm:py-6">
+
+  <!-- 0.6s iOS Splash Logo -->
+  <div id="bioSplash" class="bio-splash" aria-hidden="true">
+    <div class="bio-splash-avatar">
+      <div class="avatar-spectrum-glow"></div>
+      <div class="avatar-spectrum-ring"></div>
+      <div class="avatar-static-photo">
+        <img src="https://i.ibb.co/sJmwb3WL/IMG-1730.jpg" alt="Shin" class="w-full h-full object-cover rounded-full" />
+      </div>
+    </div>
+    <div class="bio-splash-title">Văn Trường • HoloCard OS</div>
+  </div>
 
   <canvas id="bgCanvas"></canvas>
   <div class="noise-overlay"></div>
@@ -1601,6 +1676,14 @@ Khánh</textarea>
       wheelResultBanner.classList.add("hidden");
       drawWheel();
     });
+    const bioSplash = document.getElementById("bioSplash");
+    setTimeout(() => {
+      document.body.classList.add("bio-ready");
+      if (bioSplash) {
+        bioSplash.classList.add("splash-out");
+        setTimeout(() => bioSplash.remove(), 360);
+      }
+    }, 580);
   </script>
 </body>
 </html>
